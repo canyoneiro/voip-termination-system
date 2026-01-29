@@ -642,6 +642,45 @@ class FraudDetectionService
     }
 
     /**
+     * Calculate risk scores for all active customers
+     */
+    public function calculateAllRiskScores(): array
+    {
+        $customers = Customer::where('active', true)->get();
+        $scores = [];
+
+        foreach ($customers as $customer) {
+            $score = $this->calculateRiskScore($customer);
+            $incidentsCount = FraudIncident::where('customer_id', $customer->id)
+                ->where('created_at', '>=', now()->subDays(30))
+                ->count();
+
+            $scores[] = [
+                'customer' => $customer,
+                'customer_id' => $customer->id,
+                'customer_name' => $customer->name,
+                'score' => $score,
+                'level' => $this->getRiskLevel($score),
+                'incidents_count' => $incidentsCount,
+            ];
+        }
+
+        return $scores;
+    }
+
+    /**
+     * Get risk level label from score
+     */
+    protected function getRiskLevel(int $score): string
+    {
+        if ($score >= 70) return 'critical';
+        if ($score >= 50) return 'high';
+        if ($score >= 25) return 'medium';
+        if ($score >= 10) return 'low';
+        return 'none';
+    }
+
+    /**
      * Get fraud statistics
      */
     public function getStats(string $from, string $to): array

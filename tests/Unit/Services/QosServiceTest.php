@@ -134,6 +134,9 @@ class QosServiceTest extends TestCase
 
     public function test_get_realtime_qos(): void
     {
+        // Clear any existing QoS metrics to ensure clean state
+        QosMetric::query()->delete();
+
         $customer = Customer::factory()->create();
         $carrier = Carrier::factory()->create();
 

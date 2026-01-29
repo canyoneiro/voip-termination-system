@@ -350,7 +350,7 @@
     }
 
     function editRule(rule) {
-        document.getElementById('editRuleForm').action = '{{ route("dialing-plans.rules.update", [$dialingPlan, ""]) }}/' + rule.id;
+        document.getElementById('editRuleForm').action = '/dialing-plans/{{ $dialingPlan->id }}/rules/' + rule.id;
         document.getElementById('editType').value = rule.type;
         document.getElementById('editPattern').value = rule.pattern;
         document.getElementById('editDescription').value = rule.description || '';
