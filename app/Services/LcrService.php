@@ -218,15 +218,10 @@ class LcrService
      */
     public function calculateCdrBilling(Cdr $cdr): array
     {
-        $cost = $this->calculateCdrCost($cdr);
-        $price = $this->calculateCdrPrice($cdr);
-        $profit = null;
-        $margin = null;
-
-        if ($cost !== null && $price !== null) {
-            $profit = round($price - $cost, 6);
-            $margin = $price > 0 ? round(($profit / $price) * 100, 2) : 0;
-        }
+        $cost = $this->calculateCdrCost($cdr) ?? 0;
+        $price = $this->calculateCdrPrice($cdr) ?? 0;
+        $profit = round($price - $cost, 6);
+        $margin = $price > 0 ? round(($profit / $price) * 100, 4) : 0;
 
         // Find and set destination prefix if not set
         $prefixId = $cdr->destination_prefix_id;

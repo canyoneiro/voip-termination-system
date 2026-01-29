@@ -143,6 +143,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/sync-redis', [RateController::class, 'syncRedis'])->name('sync-redis');
     });
 
+    // Billing
+    Route::prefix('billing')->name('billing.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Web\BillingController::class, 'index'])->name('index');
+        Route::get('/customers', [\App\Http\Controllers\Web\BillingController::class, 'customers'])->name('customers');
+        Route::get('/customers/{customer}', [\App\Http\Controllers\Web\BillingController::class, 'customerDetail'])->name('customer');
+        Route::post('/customers/{customer}/credit', [\App\Http\Controllers\Web\BillingController::class, 'addCredit'])->name('add-credit');
+        Route::post('/customers/{customer}/adjustment', [\App\Http\Controllers\Web\BillingController::class, 'adjustment'])->name('adjustment');
+        Route::post('/customers/{customer}/suspend', [\App\Http\Controllers\Web\BillingController::class, 'suspend'])->name('suspend');
+        Route::post('/customers/{customer}/unsuspend', [\App\Http\Controllers\Web\BillingController::class, 'unsuspend'])->name('unsuspend');
+        Route::put('/customers/{customer}/billing-type', [\App\Http\Controllers\Web\BillingController::class, 'updateBillingType'])->name('update-billing-type');
+        Route::get('/transactions', [\App\Http\Controllers\Web\BillingController::class, 'transactions'])->name('transactions');
+        Route::get('/invoices', [\App\Http\Controllers\Web\BillingController::class, 'invoices'])->name('invoices');
+        Route::post('/customers/{customer}/generate-invoice', [\App\Http\Controllers\Web\BillingController::class, 'generateInvoice'])->name('generate-invoice');
+        Route::get('/invoices/{invoice}', [\App\Http\Controllers\Web\BillingController::class, 'showInvoice'])->name('invoice');
+        Route::put('/invoices/{invoice}/status', [\App\Http\Controllers\Web\BillingController::class, 'updateInvoiceStatus'])->name('invoice.update-status');
+    });
+
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

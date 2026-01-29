@@ -24,6 +24,14 @@ class Customer extends Model
         'used_daily_minutes',
         'used_monthly_minutes',
         'active',
+        'billing_type',
+        'balance',
+        'credit_limit',
+        'low_balance_threshold',
+        'currency',
+        'auto_suspend_on_zero',
+        'suspended_at',
+        'suspended_reason',
         'portal_enabled',
         'rate_plan_id',
         'dialing_plan_id',
@@ -51,6 +59,11 @@ class Customer extends Model
         'used_monthly_minutes' => 'integer',
         'rate_plan_id' => 'integer',
         'dialing_plan_id' => 'integer',
+        'balance' => 'decimal:4',
+        'credit_limit' => 'decimal:4',
+        'low_balance_threshold' => 'decimal:4',
+        'auto_suspend_on_zero' => 'boolean',
+        'suspended_at' => 'datetime',
     ];
 
     protected static function boot()
@@ -123,6 +136,16 @@ class Customer extends Model
         return $this->hasMany(FraudIncident::class);
     }
 
+    public function billingTransactions(): HasMany
+    {
+        return $this->hasMany(BillingTransaction::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     public function getActiveCallsCountAttribute(): int
     {
         return $this->activeCalls()->count();
@@ -155,5 +178,98 @@ class Customer extends Model
         }
 
         return $this->dialingPlan->isNumberAllowed($number, $prefix);
+    }
+
+    /**
+     * Check if customer is prepaid
+     */
+    public function isPrepaid(): bool
+    {
+        return $this->billing_type === 'prepaid';
+    }
+
+    /**
+     * Check if customer is postpaid
+     */
+    public function isPostpaid(): bool
+    {
+        return $this->billing_type === 'postpaid';
+    }
+
+    /**
+     * Check if customer has sufficient balance/credit
+     */
+    public function hasCredit(): bool
+    {
+        if ($this->isPrepaid()) {
+            return $this->balance > 0;
+        }
+
+        // Postpaid: check if within credit limit
+        return ($this->balance + $this->credit_limit) > 0;
+    }
+
+    /**
+     * Get available credit (for prepaid: balance, for postpaid: balance + credit_limit)
+     */
+    public function getAvailableCreditAttribute(): float
+    {
+        if ($this->isPrepaid()) {
+            return max(0, $this->balance);
+        }
+
+        return $this->balance + $this->credit_limit;
+    }
+
+    /**
+     * Check if balance is low
+     */
+    public function isLowBalance(): bool
+    {
+        if ($this->isPrepaid()) {
+            return $this->balance <= $this->low_balance_threshold;
+        }
+
+        return $this->available_credit <= $this->low_balance_threshold;
+    }
+
+    /**
+     * Check if customer is suspended
+     */
+    public function isSuspended(): bool
+    {
+        return $this->suspended_at !== null;
+    }
+
+    /**
+     * Get billing status color for UI
+     */
+    public function getBillingStatusColorAttribute(): string
+    {
+        if ($this->isSuspended()) {
+            return 'red';
+        }
+
+        if ($this->isLowBalance()) {
+            return 'yellow';
+        }
+
+        return 'green';
+    }
+
+    /**
+     * Get billing status label for UI
+     */
+    public function getBillingStatusLabelAttribute(): string
+    {
+        if ($this->isSuspended()) {
+            return 'Suspendido';
+        }
+
+        if ($this->isLowBalance()) {
+            return 'Saldo bajo';
+        }
+
+        return $this->isPrepaid() ? 'Prepago activo' : 'Postpago activo';
     }
 }
