@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Customer extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'uuid',
         'name',
@@ -24,6 +26,7 @@ class Customer extends Model
         'active',
         'portal_enabled',
         'rate_plan_id',
+        'dialing_plan_id',
         'notes',
         'alert_email',
         'alert_telegram_chat_id',
@@ -47,6 +50,7 @@ class Customer extends Model
         'used_daily_minutes' => 'integer',
         'used_monthly_minutes' => 'integer',
         'rate_plan_id' => 'integer',
+        'dialing_plan_id' => 'integer',
     ];
 
     protected static function boot()
@@ -94,6 +98,11 @@ class Customer extends Model
         return $this->belongsTo(RatePlan::class);
     }
 
+    public function dialingPlan(): BelongsTo
+    {
+        return $this->belongsTo(DialingPlan::class);
+    }
+
     public function customerRates(): HasMany
     {
         return $this->hasMany(CustomerRate::class);
@@ -129,5 +138,22 @@ class Customer extends Model
     {
         if (!$this->max_monthly_minutes) return null;
         return round(($this->used_monthly_minutes / $this->max_monthly_minutes) * 100, 2);
+    }
+
+    /**
+     * Check if customer is allowed to dial a number based on dialing plan
+     */
+    public function canDialNumber(string $number, ?DestinationPrefix $prefix = null): array
+    {
+        // No dialing plan = all allowed
+        if (!$this->dialing_plan_id || !$this->dialingPlan) {
+            return [
+                'allowed' => true,
+                'reason' => 'no_dialing_plan',
+                'message' => 'No dialing plan restrictions',
+            ];
+        }
+
+        return $this->dialingPlan->isNumberAllowed($number, $prefix);
     }
 }

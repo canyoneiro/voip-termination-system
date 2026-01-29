@@ -46,7 +46,7 @@
                     </a>
                     <!-- More Dropdown -->
                     <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('qos.*') || request()->routeIs('fraud.*') || request()->routeIs('reports.*') || request()->routeIs('rates.*') || request()->routeIs('webhooks.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                        <button @click="open = !open" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('qos.*') || request()->routeIs('fraud.*') || request()->routeIs('reports.*') || request()->routeIs('rates.*') || request()->routeIs('dialing-plans.*') || request()->routeIs('webhooks.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                             Mas
                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -71,6 +71,10 @@
                             <a href="{{ route('rates.index') }}" class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('rates.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50' }}">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 Tarifas / LCR
+                            </a>
+                            <a href="{{ route('dialing-plans.index') }}" class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('dialing-plans.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                Dialing Plans
                             </a>
                             <hr class="my-1 border-slate-200">
                             <a href="{{ route('webhooks.index') }}" class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('webhooks.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50' }}">
@@ -143,6 +147,7 @@
             <a href="{{ route('fraud.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('fraud.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Fraude</a>
             <a href="{{ route('reports.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('reports.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Reportes</a>
             <a href="{{ route('rates.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('rates.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Tarifas / LCR</a>
+            <a href="{{ route('dialing-plans.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('dialing-plans.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Dialing Plans</a>
             <a href="{{ route('webhooks.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('webhooks.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Webhooks</a>
         </div>
 

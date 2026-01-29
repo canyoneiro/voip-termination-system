@@ -61,6 +61,37 @@
                         </div>
                     </div>
 
+                    <!-- Planes -->
+                    <div class="mb-8">
+                        <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Planes Asignados</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="rate_plan_id" class="block text-sm font-medium text-gray-300">Plan de Tarifas</label>
+                                <select name="rate_plan_id" id="rate_plan_id" class="dark-input mt-1 w-full py-2 px-3">
+                                    <option value="">Sin plan de tarifas</option>
+                                    @foreach(\App\Models\RatePlan::where('active', true)->orderBy('name')->get() as $ratePlan)
+                                        <option value="{{ $ratePlan->id }}" {{ old('rate_plan_id', $customer->rate_plan_id) == $ratePlan->id ? 'selected' : '' }}>
+                                            {{ $ratePlan->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">Define los precios de venta para este cliente</p>
+                            </div>
+                            <div>
+                                <label for="dialing_plan_id" class="block text-sm font-medium text-gray-300">Plan de Marcacion</label>
+                                <select name="dialing_plan_id" id="dialing_plan_id" class="dark-input mt-1 w-full py-2 px-3">
+                                    <option value="">Sin restricciones</option>
+                                    @foreach(\App\Models\DialingPlan::where('active', true)->orderBy('name')->get() as $dialingPlan)
+                                        <option value="{{ $dialingPlan->id }}" {{ old('dialing_plan_id', $customer->dialing_plan_id) == $dialingPlan->id ? 'selected' : '' }}>
+                                            {{ $dialingPlan->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">Restringe los destinos que puede marcar</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Limites -->
                     <div class="mb-8">
                         <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Limites de Servicio</h3>

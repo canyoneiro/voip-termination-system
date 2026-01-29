@@ -38,6 +38,8 @@ class CustomerController extends Controller
             'notes' => 'nullable|string',
             'alert_email' => 'nullable|email|max:255',
             'alert_telegram_chat_id' => 'nullable|string|max:100',
+            'rate_plan_id' => 'nullable|exists:rate_plans,id',
+            'dialing_plan_id' => 'nullable|exists:dialing_plans,id',
         ]);
 
         $validated['uuid'] = Str::uuid();
@@ -80,6 +82,8 @@ class CustomerController extends Controller
             'notes' => 'nullable|string',
             'alert_email' => 'nullable|email|max:255',
             'alert_telegram_chat_id' => 'nullable|string|max:100',
+            'rate_plan_id' => 'nullable|exists:rate_plans,id',
+            'dialing_plan_id' => 'nullable|exists:dialing_plans,id',
             'active' => 'boolean',
         ]);
 

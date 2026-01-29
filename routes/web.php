@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\CarrierController;
 use App\Http\Controllers\Web\CdrController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\DialingPlanController;
 use App\Http\Controllers\Web\FraudController;
 use App\Http\Controllers\Web\QosController;
 use App\Http\Controllers\Web\RateController;
@@ -31,6 +32,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Carriers
     Route::resource('carriers', CarrierController::class);
     Route::post('carriers/{carrier}/test', [CarrierController::class, 'test'])->name('carriers.test');
+
+    // Dialing Plans
+    Route::resource('dialing-plans', DialingPlanController::class);
+    Route::post('dialing-plans/{dialing_plan}/rules', [DialingPlanController::class, 'storeRule'])->name('dialing-plans.rules.store');
+    Route::put('dialing-plans/{dialing_plan}/rules/{rule}', [DialingPlanController::class, 'updateRule'])->name('dialing-plans.rules.update');
+    Route::delete('dialing-plans/{dialing_plan}/rules/{rule}', [DialingPlanController::class, 'destroyRule'])->name('dialing-plans.rules.destroy');
+    Route::post('dialing-plans/{dialing_plan}/test', [DialingPlanController::class, 'testNumber'])->name('dialing-plans.test');
+    Route::post('dialing-plans/{dialing_plan}/clone', [DialingPlanController::class, 'clone'])->name('dialing-plans.clone');
+    Route::post('dialing-plans/{dialing_plan}/import-rules', [DialingPlanController::class, 'importRules'])->name('dialing-plans.rules.import');
 
     // CDRs
     Route::get('cdrs', [CdrController::class, 'index'])->name('cdrs.index');

@@ -152,6 +152,30 @@
 
 ---
 
+## Fase 5 - Dialing Plans (COMPLETADO)
+
+### Dialing Plans - Restriccion de Destinos por Cliente
+- [x] Migracion de BD (dialing_plans, dialing_plan_rules)
+- [x] Campo dialing_plan_id en customers
+- [x] Modelo DialingPlan
+- [x] Modelo DialingPlanRule
+- [x] Metodo isNumberAllowed() con wildcards
+- [x] Integracion en LcrService (checkDialingPlan)
+- [x] Metodo canDialNumber() en Customer
+- [x] DialingPlanController con CRUD completo
+- [x] Vista index (listado de planes)
+- [x] Vista create (crear plan)
+- [x] Vista edit (editar plan)
+- [x] Vista show (detalle con reglas)
+- [x] Gestion de reglas (add/edit/delete)
+- [x] Importar reglas desde texto
+- [x] Clonar dialing plan
+- [x] Test de numeros en vivo
+- [x] Selector de dialing plan en edicion de cliente
+- [x] Navegacion actualizada
+
+---
+
 ## Proximos Pasos (Opcional)
 
 ### Mejoras Pendientes
@@ -170,6 +194,15 @@
 ---
 
 ## Registro de Cambios
+
+### 2026-01-29 (Fase 5)
+- Sistema de Dialing Plans implementado
+- Restriccion de destinos por cliente
+- Soporte para wildcards en patrones (34*, 346?)
+- Bloqueo automatico de destinos premium
+- Prioridades en reglas (FIFO)
+- Test de numeros en vivo
+- Integracion completa con LCR
 
 ### 2026-01-29 (Fase 4)
 - Documentacion API Swagger/OpenAPI completa

@@ -29,6 +29,18 @@ class LcrService
     public function selectCarrier(string $calledNumber, Customer $customer, array $options = []): ?array
     {
         $prefix = $this->findDestinationPrefix($calledNumber);
+
+        // Check customer's dialing plan restrictions
+        $dialingCheck = $this->checkDialingPlan($customer, $calledNumber, $prefix);
+        if (!$dialingCheck['allowed']) {
+            return [
+                'error' => true,
+                'code' => 403,
+                'reason' => $dialingCheck['reason'],
+                'message' => $dialingCheck['message'],
+            ];
+        }
+
         if (!$prefix) {
             return $this->fallbackToPriority($calledNumber, $options);
         }
@@ -53,6 +65,14 @@ class LcrService
 
         // All carriers busy, try fallback
         return $this->fallbackToPriority($calledNumber, $options);
+    }
+
+    /**
+     * Check if customer is allowed to dial based on their dialing plan
+     */
+    public function checkDialingPlan(Customer $customer, string $number, ?DestinationPrefix $prefix = null): array
+    {
+        return $customer->canDialNumber($number, $prefix);
     }
 
     /**
