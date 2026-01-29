@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ActiveCallController;
 use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\SystemController;
+use App\Http\Controllers\Api\WebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,5 +100,18 @@ Route::prefix('v1')->group(function () {
         Route::get('/', [SystemController::class, 'blacklist']);
         Route::post('/', [SystemController::class, 'addToBlacklist']);
         Route::delete('/{id}', [SystemController::class, 'removeFromBlacklist']);
+    });
+
+    // Webhooks
+    Route::prefix('webhooks')->group(function () {
+        Route::get('/', [WebhookController::class, 'index']);
+        Route::post('/', [WebhookController::class, 'store']);
+        Route::get('/{webhook}', [WebhookController::class, 'show']);
+        Route::put('/{webhook}', [WebhookController::class, 'update']);
+        Route::delete('/{webhook}', [WebhookController::class, 'destroy']);
+        Route::post('/{webhook}/regenerate-secret', [WebhookController::class, 'regenerateSecret']);
+        Route::post('/{webhook}/test', [WebhookController::class, 'test']);
+        Route::get('/{webhook}/deliveries', [WebhookController::class, 'deliveries']);
+        Route::post('/deliveries/{delivery}/retry', [WebhookController::class, 'retryDelivery']);
     });
 });

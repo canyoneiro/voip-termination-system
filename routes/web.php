@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\CarrierController;
 use App\Http\Controllers\Web\CdrController;
 use App\Http\Controllers\Web\AlertController;
 use App\Http\Controllers\Web\BlacklistController;
+use App\Http\Controllers\Web\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -44,6 +45,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('blacklist', [BlacklistController::class, 'store'])->name('blacklist.store');
     Route::delete('blacklist/{blacklist}', [BlacklistController::class, 'destroy'])->name('blacklist.destroy');
     Route::post('blacklist/{blacklist}/toggle-permanent', [BlacklistController::class, 'togglePermanent'])->name('blacklist.toggle-permanent');
+
+    // Webhooks
+    Route::resource('webhooks', WebhookController::class);
+    Route::post('webhooks/{webhook}/regenerate-secret', [WebhookController::class, 'regenerateSecret'])->name('webhooks.regenerate-secret');
+    Route::post('webhooks/{webhook}/test', [WebhookController::class, 'test'])->name('webhooks.test');
+    Route::get('webhooks/{webhook}/deliveries', [WebhookController::class, 'deliveries'])->name('webhooks.deliveries');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

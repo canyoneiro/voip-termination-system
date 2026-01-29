@@ -34,6 +34,9 @@
                     <x-nav-link :href="route('blacklist.index')" :active="request()->routeIs('blacklist.*')">
                         Blacklist
                     </x-nav-link>
+                    <x-nav-link :href="route('webhooks.index')" :active="request()->routeIs('webhooks.*')">
+                        Webhooks
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -103,6 +106,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('blacklist.index')" :active="request()->routeIs('blacklist.*')">
                 Blacklist
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('webhooks.index')" :active="request()->routeIs('webhooks.*')">
+                Webhooks
             </x-responsive-nav-link>
         </div>
 

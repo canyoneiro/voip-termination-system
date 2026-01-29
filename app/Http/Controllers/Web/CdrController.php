@@ -52,15 +52,20 @@ class CdrController extends Controller
             $query->where('duration', '>=', $request->min_duration);
         }
 
-        $cdrs = $query->orderBy('start_time', 'desc')->paginate(50);
-
-        // Stats for current filter
-        $statsQuery = clone $query;
-        $stats = $statsQuery->getQuery()
+        // Stats for current filter (before pagination)
+        $stats = Cdr::query()
+            ->when($request->filled('customer_id'), fn($q) => $q->where('customer_id', $request->customer_id))
+            ->when($request->filled('carrier_id'), fn($q) => $q->where('carrier_id', $request->carrier_id))
+            ->when($request->filled('from'), fn($q) => $q->where('start_time', '>=', $request->from))
+            ->when($request->filled('to'), fn($q) => $q->where('start_time', '<=', $request->to . ' 23:59:59'))
+            ->when($request->filled('status') && $request->status === 'answered', fn($q) => $q->whereNotNull('answer_time'))
+            ->when($request->filled('status') && $request->status === 'failed', fn($q) => $q->whereNull('answer_time'))
             ->selectRaw('COUNT(*) as total')
             ->selectRaw('SUM(CASE WHEN answer_time IS NOT NULL THEN 1 ELSE 0 END) as answered')
             ->selectRaw('SUM(duration) as total_duration')
             ->first();
+
+        $cdrs = $query->orderBy('start_time', 'desc')->paginate(50);
 
         $customers = Customer::orderBy('name')->get(['id', 'name']);
         $carriers = Carrier::orderBy('name')->get(['id', 'name']);
