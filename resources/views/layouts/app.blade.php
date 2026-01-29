@@ -26,9 +26,9 @@
 
             body {
                 font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-                background: #f8fafc;
+                background: #f1f5f9;
                 min-height: 100vh;
-                color: #1e293b;
+                color: #334155;
                 margin: 0;
             }
 
@@ -85,7 +85,7 @@
                 background: #ffffff;
                 border: 1px solid #e2e8f0;
                 border-radius: 12px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             }
 
             /* ===== STAT CARDS ===== */
@@ -95,7 +95,7 @@
                 border-radius: 12px;
                 padding: 1.25rem;
                 position: relative;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
                 overflow: hidden;
             }
             .stat-card::before {
@@ -144,8 +144,8 @@
             /* ===== INPUTS ===== */
             .dark-input {
                 background: #ffffff;
-                border: 1px solid #e2e8f0;
-                color: #1e293b;
+                border: 1px solid #cbd5e1;
+                color: #334155;
                 border-radius: 8px;
                 padding: 0.5rem 0.75rem;
                 font-size: 0.875rem;
@@ -163,8 +163,8 @@
 
             .dark-select {
                 background: #ffffff;
-                border: 1px solid #e2e8f0;
-                color: #1e293b;
+                border: 1px solid #cbd5e1;
+                color: #334155;
                 border-radius: 8px;
                 padding: 0.5rem 0.75rem;
                 font-size: 0.875rem;
@@ -174,6 +174,10 @@
                 border-color: #3b82f6;
                 box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
                 outline: none;
+            }
+            .dark-select option {
+                background: #ffffff;
+                color: #334155;
             }
 
             /* ===== BUTTONS ===== */
@@ -204,7 +208,7 @@
                 border-radius: 8px;
                 font-weight: 500;
                 font-size: 0.875rem;
-                border: 1px solid #e2e8f0;
+                border: 1px solid #cbd5e1;
                 cursor: pointer;
                 transition: all 0.15s ease;
                 display: inline-flex;
@@ -213,7 +217,7 @@
             }
             .btn-secondary:hover {
                 background: #f8fafc;
-                border-color: #cbd5e1;
+                border-color: #94a3b8;
             }
 
             .btn-danger {
@@ -273,24 +277,28 @@
                 border: 1px solid #bfdbfe;
                 border-radius: 8px;
                 padding: 1rem;
+                color: #1e40af;
             }
             .warning-box {
                 background: #fffbeb;
                 border: 1px solid #fcd34d;
                 border-radius: 8px;
                 padding: 1rem;
+                color: #92400e;
             }
             .danger-box {
                 background: #fef2f2;
                 border: 1px solid #fecaca;
                 border-radius: 8px;
                 padding: 1rem;
+                color: #991b1b;
             }
             .success-box {
                 background: #f0fdf4;
                 border: 1px solid #86efac;
                 border-radius: 8px;
                 padding: 1rem;
+                color: #166534;
             }
 
             /* ===== SCROLLBAR ===== */
@@ -299,7 +307,7 @@
                 height: 6px;
             }
             ::-webkit-scrollbar-track {
-                background: transparent;
+                background: #f1f5f9;
             }
             ::-webkit-scrollbar-thumb {
                 background: #cbd5e1;
@@ -340,6 +348,47 @@
             .bg-red-500 { background: #ef4444 !important; }
             .bg-blue-500 { background: #3b82f6 !important; }
             .bg-purple-500 { background: #8b5cf6 !important; }
+
+            /* Light theme text color overrides */
+            .text-white { color: #1e293b !important; }
+            .text-gray-100 { color: #334155 !important; }
+            .text-gray-200 { color: #475569 !important; }
+            .text-gray-300 { color: #64748b !important; }
+            .text-gray-400 { color: #94a3b8 !important; }
+            .text-gray-500 { color: #64748b !important; }
+            .text-gray-600 { color: #475569 !important; }
+
+            /* Light theme backgrounds */
+            .bg-gray-700 { background: #e2e8f0 !important; }
+            .bg-gray-800 { background: #f1f5f9 !important; }
+            .bg-gray-800\/50 { background: rgba(241, 245, 249, 0.7) !important; }
+            .bg-gray-900 { background: #e2e8f0 !important; }
+
+            /* Border colors */
+            .border-gray-700 { border-color: #e2e8f0 !important; }
+            .border-gray-700\/50 { border-color: rgba(226, 232, 240, 0.5) !important; }
+            .border-gray-600 { border-color: #cbd5e1 !important; }
+
+            /* Hover states */
+            .hover\:bg-gray-700:hover { background: #e2e8f0 !important; }
+            .hover\:bg-gray-800:hover { background: #f1f5f9 !important; }
+            .hover\:bg-gray-800\/50:hover { background: rgba(241, 245, 249, 0.7) !important; }
+            .hover\:text-white:hover { color: #1e293b !important; }
+            .hover\:text-blue-300:hover { color: #2563eb !important; }
+            .hover\:text-blue-400:hover { color: #3b82f6 !important; }
+
+            /* Links */
+            a.text-blue-400 { color: #2563eb; }
+            a.text-blue-400:hover { color: #1d4ed8; }
+
+            /* Form labels */
+            label { color: #475569; }
+
+            /* Pre/code blocks keep dark for contrast */
+            pre {
+                background: #1e293b !important;
+                color: #e2e8f0 !important;
+            }
         </style>
     </head>
     <body class="font-sans antialiased">

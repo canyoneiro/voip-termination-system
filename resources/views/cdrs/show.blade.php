@@ -220,76 +220,223 @@
 
             <!-- Diagrama Ladder de Trazas SIP -->
             @if($traces->count() > 0)
+            @php
+                // Detectar IPs de las entidades
+                $clientIp = $cdr->source_ip;
+                $carrierIp = $cdr->destination_ip ?? '127.0.0.1';
+                $kamailioIp = '165.22.130.17'; // IP local de Kamailio
+
+                // Función para determinar entidad por IP
+                $getEntity = function($ip) use ($clientIp, $carrierIp) {
+                    if ($ip === $clientIp) return 'client';
+                    if (in_array($ip, ['165.22.130.17', '127.0.0.1'])) return 'kamailio';
+                    return 'carrier';
+                };
+            @endphp
             <div class="mt-6 dark-card overflow-hidden">
                 <div class="px-4 py-3 border-b border-gray-700/50 flex items-center justify-between">
                     <div>
                         <h3 class="text-sm font-semibold text-white">Diagrama de Senalizacion SIP</h3>
-                        <p class="text-xs text-gray-500">Flujo completo de mensajes SIP</p>
+                        <p class="text-xs text-gray-500">Click en cualquier mensaje para ver el contenido completo</p>
                     </div>
                     <span class="badge badge-blue">{{ $traces->count() }} mensajes</span>
                 </div>
-                <div class="p-6">
-                    <!-- Headers -->
-                    <div class="flex justify-around text-center mb-6 pb-4 border-b border-gray-700/50">
-                        <div class="w-1/3">
-                            <div class="font-bold text-white">Cliente</div>
-                            <div class="text-xs text-gray-500 font-mono">{{ $cdr->source_ip }}</div>
-                        </div>
-                        <div class="w-1/3">
-                            <div class="font-bold text-blue-400">Kamailio</div>
-                            <div class="text-xs text-gray-500 font-mono">{{ config('app.url') }}</div>
-                        </div>
-                        <div class="w-1/3">
-                            <div class="font-bold text-white">Carrier</div>
-                            <div class="text-xs text-gray-500 font-mono">{{ $cdr->destination_ip ?? '-' }}</div>
-                        </div>
+
+                <div class="p-4 overflow-x-auto">
+                    <!-- Leyenda de colores -->
+                    <div class="flex flex-wrap gap-3 mb-4 text-xs">
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-blue-500"></span> Request</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-gray-500"></span> 1xx Provisional</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-green-500"></span> 2xx Success</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-yellow-500"></span> 3xx Redirect</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-red-500"></span> 4xx/5xx/6xx Error</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-orange-500"></span> BYE/CANCEL</span>
                     </div>
 
-                    <!-- Messages -->
-                    <div class="space-y-2">
-                        @foreach($traces as $index => $trace)
-                            @php
-                                $isIncoming = $trace->direction === 'in';
-                                $method = $trace->response_code ? $trace->response_code : $trace->method;
-                                $colors = match(true) {
-                                    $trace->response_code && $trace->response_code >= 200 && $trace->response_code < 300 => 'bg-green-500',
-                                    $trace->response_code && $trace->response_code >= 100 && $trace->response_code < 200 => 'bg-gray-500',
-                                    $trace->response_code && $trace->response_code >= 300 && $trace->response_code < 400 => 'bg-yellow-500',
-                                    $trace->response_code && $trace->response_code >= 400 => 'bg-red-500',
-                                    $trace->method === 'INVITE' || $trace->method === 'ACK' => 'bg-blue-500',
-                                    $trace->method === 'BYE' || $trace->method === 'CANCEL' => 'bg-orange-500',
-                                    default => 'bg-gray-500'
-                                };
-                            @endphp
-                            <div class="flex items-center justify-center py-2 hover:bg-gray-800/50 rounded cursor-pointer transition-colors"
-                                 onclick="document.getElementById('trace-{{ $index }}').classList.toggle('hidden')">
-                                <div class="w-20 text-xs text-gray-500 font-mono">{{ $trace->timestamp->format('H:i:s.v') }}</div>
-                                @if($isIncoming)
-                                    <div class="flex items-center flex-1">
-                                        <div class="flex-1 flex items-center justify-end pr-2">
-                                            <span class="px-2 py-0.5 text-xs font-bold rounded text-white {{ $colors }}">{{ $method }}</span>
-                                        </div>
-                                        <div class="w-32 h-0.5 bg-blue-500" style="background: linear-gradient(to left, transparent, #3b82f6)"></div>
-                                        <div class="flex-1"></div>
-                                    </div>
-                                @else
-                                    <div class="flex items-center flex-1">
-                                        <div class="flex-1"></div>
-                                        <div class="w-32 h-0.5 bg-blue-500" style="background: linear-gradient(to right, transparent, #3b82f6)"></div>
-                                        <div class="flex-1 flex items-center pl-2">
-                                            <span class="px-2 py-0.5 text-xs font-bold rounded text-white {{ $colors }}">{{ $method }}</span>
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                            <div id="trace-{{ $index }}" class="hidden mx-4 mb-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-gray-400 text-xs">{{ $trace->source_ip }}:{{ $trace->source_port }} → {{ $trace->dest_ip }}:{{ $trace->dest_port }}</span>
-                                    <button onclick="navigator.clipboard.writeText(document.getElementById('msg-{{ $index }}').innerText)" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded">Copiar</button>
+                    <div class="min-w-[700px]">
+                        <!-- Headers con lineas verticales -->
+                        <div class="flex relative">
+                            <!-- Columna tiempo -->
+                            <div class="w-24 shrink-0"></div>
+
+                            <!-- Cliente -->
+                            <div class="flex-1 text-center pb-4 relative">
+                                <div class="inline-block bg-purple-500/20 border border-purple-500/50 rounded-lg px-4 py-2">
+                                    <div class="font-bold text-purple-400">Cliente</div>
+                                    <div class="text-xs text-gray-400 font-mono">{{ $clientIp }}</div>
                                 </div>
-                                <pre id="msg-{{ $index }}" class="text-xs font-mono text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-64 scrollbar-dark">{{ $trace->sip_message }}</pre>
                             </div>
-                        @endforeach
+
+                            <!-- Kamailio -->
+                            <div class="flex-1 text-center pb-4 relative">
+                                <div class="inline-block bg-blue-500/20 border border-blue-500/50 rounded-lg px-4 py-2">
+                                    <div class="font-bold text-blue-400">Kamailio</div>
+                                    <div class="text-xs text-gray-400 font-mono">165.22.130.17</div>
+                                </div>
+                            </div>
+
+                            <!-- Carrier -->
+                            <div class="flex-1 text-center pb-4 relative">
+                                <div class="inline-block bg-green-500/20 border border-green-500/50 rounded-lg px-4 py-2">
+                                    <div class="font-bold text-green-400">Carrier</div>
+                                    <div class="text-xs text-gray-400 font-mono">{{ $carrierIp ?: '-' }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Messages con lineas verticales -->
+                        <div class="relative">
+                            <!-- Lineas verticales de fondo -->
+                            <div class="absolute inset-0 flex pointer-events-none" style="left: 96px;">
+                                <div class="flex-1 flex justify-center">
+                                    <div class="w-0.5 h-full bg-purple-500/30"></div>
+                                </div>
+                                <div class="flex-1 flex justify-center">
+                                    <div class="w-0.5 h-full bg-blue-500/30"></div>
+                                </div>
+                                <div class="flex-1 flex justify-center">
+                                    <div class="w-0.5 h-full bg-green-500/30"></div>
+                                </div>
+                            </div>
+
+                            <!-- Mensajes -->
+                            @foreach($traces as $index => $trace)
+                                @php
+                                    $sourceEntity = $getEntity($trace->source_ip);
+                                    $destEntity = $getEntity($trace->dest_ip);
+
+                                    // Para loopback testing, ajustar basado en puertos
+                                    if ($trace->source_ip === '127.0.0.1' && $trace->dest_ip === '127.0.0.1') {
+                                        // Puerto 5091 = cliente test, 5060 = kamailio, 5080 = carrier test
+                                        $sourceEntity = match(true) {
+                                            $trace->source_port == 5091 => 'client',
+                                            $trace->source_port == 5080 => 'carrier',
+                                            default => 'kamailio'
+                                        };
+                                        $destEntity = match(true) {
+                                            $trace->dest_port == 5091 => 'client',
+                                            $trace->dest_port == 5080 => 'carrier',
+                                            default => 'kamailio'
+                                        };
+                                    }
+
+                                    $label = $trace->response_code
+                                        ? $trace->response_code . ' ' . ($trace->method === 'INVITE' ? '' : $trace->method)
+                                        : $trace->method;
+
+                                    $colorClass = match(true) {
+                                        $trace->response_code && $trace->response_code >= 200 && $trace->response_code < 300 => 'bg-green-500 text-white',
+                                        $trace->response_code && $trace->response_code >= 100 && $trace->response_code < 200 => 'bg-gray-600 text-white',
+                                        $trace->response_code && $trace->response_code >= 300 && $trace->response_code < 400 => 'bg-yellow-500 text-black',
+                                        $trace->response_code && $trace->response_code >= 400 => 'bg-red-500 text-white',
+                                        $trace->method === 'BYE' || $trace->method === 'CANCEL' => 'bg-orange-500 text-white',
+                                        default => 'bg-blue-500 text-white'
+                                    };
+
+                                    // Calcular posiciones (0=cliente, 1=kamailio, 2=carrier)
+                                    $positions = ['client' => 0, 'kamailio' => 1, 'carrier' => 2];
+                                    $fromPos = $positions[$sourceEntity] ?? 1;
+                                    $toPos = $positions[$destEntity] ?? 1;
+                                    $goingRight = $toPos > $fromPos;
+                                    $startCol = min($fromPos, $toPos);
+                                    $spanCols = abs($toPos - $fromPos);
+                                @endphp
+
+                                <div class="flex items-center h-10 hover:bg-gray-800/30 cursor-pointer group relative"
+                                     onclick="document.getElementById('trace-{{ $index }}').classList.toggle('hidden')">
+
+                                    <!-- Timestamp -->
+                                    <div class="w-24 shrink-0 text-xs text-gray-500 font-mono pl-2">
+                                        {{ $trace->timestamp->format('H:i:s') }}
+                                    </div>
+
+                                    <!-- Diagram area -->
+                                    <div class="flex-1 flex relative">
+                                        <!-- 3 columnas -->
+                                        <div class="flex-1 relative flex items-center justify-center">
+                                            @if($startCol === 0 && $spanCols > 0)
+                                                <!-- Flecha desde/hacia cliente -->
+                                                <div class="absolute inset-y-0 flex items-center {{ $goingRight ? 'left-1/2 right-0' : 'left-0 right-1/2' }}">
+                                                    <div class="w-full h-0.5 {{ $goingRight ? 'bg-gradient-to-r' : 'bg-gradient-to-l' }} from-purple-400 to-blue-400"></div>
+                                                </div>
+                                                @if(!$goingRight)
+                                                    <svg class="absolute left-2 w-3 h-3 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                                @endif
+                                            @endif
+                                        </div>
+
+                                        <div class="flex-1 relative flex items-center justify-center">
+                                            @if($spanCols > 0)
+                                                @if($startCol === 0 && $spanCols === 2)
+                                                    <!-- Flecha atraviesa kamailio -->
+                                                    <div class="absolute inset-y-0 inset-x-0 flex items-center">
+                                                        <div class="w-full h-0.5 {{ $goingRight ? 'bg-blue-400' : 'bg-blue-400' }}"></div>
+                                                    </div>
+                                                @elseif($startCol === 0 && $spanCols === 1)
+                                                    <!-- Flecha termina/empieza en kamailio (desde cliente) -->
+                                                    <div class="absolute inset-y-0 flex items-center {{ $goingRight ? 'left-0 right-1/2' : 'left-1/2 right-0' }}">
+                                                        <div class="w-full h-0.5 {{ $goingRight ? 'bg-gradient-to-r from-blue-400 to-blue-400' : 'bg-gradient-to-l from-blue-400 to-blue-400' }}"></div>
+                                                    </div>
+                                                    @if($goingRight)
+                                                        <svg class="absolute left-1/2 -ml-1.5 w-3 h-3 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                                                    @endif
+                                                @elseif($startCol === 1 && $spanCols === 1)
+                                                    <!-- Flecha desde kamailio hacia carrier -->
+                                                    <div class="absolute inset-y-0 flex items-center {{ $goingRight ? 'left-1/2 right-0' : 'left-0 right-1/2' }}">
+                                                        <div class="w-full h-0.5 {{ $goingRight ? 'bg-gradient-to-r from-blue-400 to-green-400' : 'bg-gradient-to-l from-green-400 to-blue-400' }}"></div>
+                                                    </div>
+                                                    @if(!$goingRight)
+                                                        <svg class="absolute left-1/2 -ml-1.5 w-3 h-3 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                                    @endif
+                                                @endif
+                                            @endif
+
+                                            <!-- Label del mensaje (centrado en la flecha) -->
+                                            @if($spanCols > 0)
+                                                <span class="relative z-10 px-2 py-0.5 text-xs font-bold rounded shadow-lg {{ $colorClass }}">
+                                                    {{ $label }}
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        <div class="flex-1 relative flex items-center justify-center">
+                                            @if(($startCol === 1 && $spanCols === 1 && $goingRight) || ($startCol === 0 && $spanCols === 2))
+                                                <!-- Flecha hacia carrier -->
+                                                <div class="absolute inset-y-0 flex items-center {{ $goingRight ? 'left-0 right-1/2' : 'left-1/2 right-0' }}">
+                                                    <div class="w-full h-0.5 bg-green-400"></div>
+                                                </div>
+                                                @if($goingRight)
+                                                    <svg class="absolute right-1/2 mr-0 w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                                                @endif
+                                            @elseif($startCol === 2 || (!$goingRight && $toPos === 1 && $fromPos === 2))
+                                                <!-- Flecha desde carrier -->
+                                                <div class="absolute inset-y-0 flex items-center left-1/2 right-0">
+                                                    <div class="w-full h-0.5 bg-gradient-to-l from-green-400 to-blue-400"></div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Detalle del mensaje (oculto por defecto) -->
+                                <div id="trace-{{ $index }}" class="hidden mx-2 mb-2 ml-24 p-3 bg-gray-900 rounded-lg border border-gray-700 relative z-10">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <div class="flex items-center gap-4 text-xs">
+                                            <span class="text-purple-400">{{ $trace->source_ip }}:{{ $trace->source_port }}</span>
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                            <span class="text-green-400">{{ $trace->dest_ip }}:{{ $trace->dest_port }}</span>
+                                            <span class="text-gray-600">|</span>
+                                            <span class="text-gray-500">{{ $trace->transport }}</span>
+                                        </div>
+                                        <button onclick="event.stopPropagation(); navigator.clipboard.writeText(document.getElementById('msg-{{ $index }}').innerText).then(() => this.textContent = 'Copiado!')"
+                                                class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded transition-colors">
+                                            Copiar
+                                        </button>
+                                    </div>
+                                    <pre id="msg-{{ $index }}" class="text-xs font-mono text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48 bg-black/30 p-2 rounded">{{ $trace->sip_message }}</pre>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>

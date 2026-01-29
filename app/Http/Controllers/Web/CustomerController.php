@@ -85,6 +85,7 @@ class CustomerController extends Controller
             'rate_plan_id' => 'nullable|exists:rate_plans,id',
             'dialing_plan_id' => 'nullable|exists:dialing_plans,id',
             'active' => 'boolean',
+            'traces_enabled' => 'boolean',
         ]);
 
         $customer->update($validated);

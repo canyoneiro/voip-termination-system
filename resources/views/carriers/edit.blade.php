@@ -20,14 +20,27 @@
                     <!-- Estado -->
                     <div class="mb-8">
                         <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Estado del Carrier</h3>
-                        <div>
-                            <label for="state" class="block text-sm font-medium text-gray-300">Estado *</label>
-                            <select name="state" id="state" required class="dark-select mt-1 w-full md:w-1/2 py-2 px-3">
-                                <option value="active" {{ old('state', $carrier->state) === 'active' ? 'selected' : '' }}>Activo - Recibiendo trafico</option>
-                                <option value="inactive" {{ old('state', $carrier->state) === 'inactive' ? 'selected' : '' }}>Inactivo - Sin trafico</option>
-                                <option value="probing" {{ old('state', $carrier->state) === 'probing' ? 'selected' : '' }}>En pruebas - Verificando</option>
-                                <option value="disabled" {{ old('state', $carrier->state) === 'disabled' ? 'selected' : '' }}>Deshabilitado - Fuera de servicio</option>
-                            </select>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="state" class="block text-sm font-medium text-gray-300">Estado *</label>
+                                <select name="state" id="state" required class="dark-select mt-1 w-full py-2 px-3">
+                                    <option value="active" {{ old('state', $carrier->state) === 'active' ? 'selected' : '' }}>Activo - Recibiendo trafico</option>
+                                    <option value="inactive" {{ old('state', $carrier->state) === 'inactive' ? 'selected' : '' }}>Inactivo - Sin trafico</option>
+                                    <option value="probing" {{ old('state', $carrier->state) === 'probing' ? 'selected' : '' }}>En pruebas - Verificando</option>
+                                    <option value="disabled" {{ old('state', $carrier->state) === 'disabled' ? 'selected' : '' }}>Deshabilitado - Fuera de servicio</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Monitoreo SIP OPTIONS</label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="hidden" name="probing_enabled" value="0">
+                                    <input type="checkbox" name="probing_enabled" value="1"
+                                        {{ old('probing_enabled', $carrier->probing_enabled) ? 'checked' : '' }}
+                                        class="w-5 h-5 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800">
+                                    <span class="text-gray-300">Habilitar probing con OPTIONS</span>
+                                </label>
+                                <p class="mt-1 text-xs text-gray-500">Si esta deshabilitado, el carrier se mantendra en su estado configurado sin verificacion automatica</p>
+                            </div>
                         </div>
                     </div>
 

@@ -68,6 +68,29 @@
                         </div>
                     </div>
 
+                    <!-- Monitoreo -->
+                    <div class="mb-8">
+                        <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Monitoreo</h3>
+                        <div>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="hidden" name="probing_enabled" value="0">
+                                <input type="checkbox" name="probing_enabled" value="1"
+                                    {{ old('probing_enabled', true) ? 'checked' : '' }}
+                                    class="w-5 h-5 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800">
+                                <span class="text-gray-300">Habilitar probing con SIP OPTIONS</span>
+                            </label>
+                            <p class="mt-2 text-xs text-gray-500">
+                                Cuando esta habilitado, Kamailio enviara mensajes OPTIONS periodicamente para verificar la disponibilidad del carrier.
+                                Si el carrier no responde, sera marcado como inactivo automaticamente.
+                            </p>
+                            <div class="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                                <p class="text-xs text-yellow-400">
+                                    <strong>Nota:</strong> Deshabilita esta opcion si el carrier no soporta OPTIONS o si deseas gestionar el estado manualmente.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Limites -->
                     <div class="mb-8">
                         <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Limites de Capacidad</h3>

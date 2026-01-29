@@ -143,6 +143,39 @@
             </svg>
             <span>Webhooks</span>
         </a>
+
+        <!-- Section: Administracion -->
+        <div class="nav-section">
+            <span class="nav-section-title">Administracion</span>
+        </div>
+
+        <a href="{{ route('system.index') }}" class="nav-item {{ request()->routeIs('system.index') ? 'active' : '' }}">
+            <svg class="nav-icon text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
+            </svg>
+            <span>Sistema</span>
+        </a>
+
+        <a href="{{ route('system.status') }}" class="nav-item {{ request()->routeIs('system.status') ? 'active' : '' }}">
+            <svg class="nav-icon text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Estado</span>
+        </a>
+
+        <a href="{{ route('system.logs') }}" class="nav-item {{ request()->routeIs('system.logs') ? 'active' : '' }}">
+            <svg class="nav-icon text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span>Logs</span>
+        </a>
+
+        <a href="{{ route('system.database') }}" class="nav-item {{ request()->routeIs('system.database') ? 'active' : '' }}">
+            <svg class="nav-icon text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+            </svg>
+            <span>Base de Datos</span>
+        </a>
     </nav>
 
     <!-- Footer -->

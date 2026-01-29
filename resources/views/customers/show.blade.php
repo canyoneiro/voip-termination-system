@@ -13,6 +13,12 @@
                         @else
                             <span class="ml-3 badge badge-red">Inactivo</span>
                         @endif
+                        @if($customer->traces_enabled)
+                            <span class="ml-2 badge badge-blue" title="Trazas SIP habilitadas">
+                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                Trazas
+                            </span>
+                        @endif
                     </div>
                     <p class="text-sm text-gray-400 mt-0.5">{{ $customer->company ?? 'Cliente individual' }}</p>
                 </div>

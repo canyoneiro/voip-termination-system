@@ -138,6 +138,29 @@
                         </div>
                     </div>
 
+                    <!-- Debug / Trazas SIP -->
+                    <div class="mb-8">
+                        <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Debug y Diagnostico</h3>
+                        <div class="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                            <div>
+                                <h4 class="text-sm font-medium text-white">Capturar Trazas SIP</h4>
+                                <p class="text-xs text-gray-500 mt-0.5">Guarda todos los mensajes SIP de las llamadas para diagnostico</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="hidden" name="traces_enabled" value="0">
+                                <input type="checkbox" name="traces_enabled" value="1" class="sr-only peer" {{ old('traces_enabled', $customer->traces_enabled) ? 'checked' : '' }}>
+                                <div class="w-14 h-7 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500"></div>
+                                <span class="ml-3 text-sm font-medium {{ $customer->traces_enabled ? 'text-blue-400' : 'text-gray-400' }}">{{ $customer->traces_enabled ? 'Activo' : 'Inactivo' }}</span>
+                            </label>
+                        </div>
+                        @if($customer->traces_enabled)
+                        <p class="mt-2 text-xs text-blue-400">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Las trazas se pueden ver en el detalle de cada CDR
+                        </p>
+                        @endif
+                    </div>
+
                     <!-- Notas -->
                     <div class="mb-8">
                         <label for="notes" class="block text-sm font-medium text-gray-300">Notas Internas</label>

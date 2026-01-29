@@ -40,10 +40,12 @@ class CarrierController extends Controller
             'prefix_deny' => 'nullable|string',
             'max_cps' => 'required|integer|min:1|max:100',
             'max_channels' => 'required|integer|min:1|max:1000',
+            'probing_enabled' => 'nullable|boolean',
             'notes' => 'nullable|string',
         ]);
 
         $validated['uuid'] = Str::uuid();
+        $validated['probing_enabled'] = $request->boolean('probing_enabled');
         $carrier = Carrier::create($validated);
 
         // Reload Kamailio dispatcher
@@ -89,9 +91,11 @@ class CarrierController extends Controller
             'max_cps' => 'required|integer|min:1|max:100',
             'max_channels' => 'required|integer|min:1|max:1000',
             'state' => 'required|in:active,inactive,probing,disabled',
+            'probing_enabled' => 'nullable|boolean',
             'notes' => 'nullable|string',
         ]);
 
+        $validated['probing_enabled'] = $request->boolean('probing_enabled');
         $carrier->update($validated);
 
         // Reload Kamailio dispatcher

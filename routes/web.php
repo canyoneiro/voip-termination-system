@@ -12,6 +12,7 @@ use App\Http\Controllers\Web\FraudController;
 use App\Http\Controllers\Web\QosController;
 use App\Http\Controllers\Web\RateController;
 use App\Http\Controllers\Web\ReportController;
+use App\Http\Controllers\Web\SystemController;
 use App\Http\Controllers\Web\WebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -164,6 +165,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // System Administration
+    Route::prefix('system')->name('system.')->group(function () {
+        Route::get('/', [SystemController::class, 'index'])->name('index');
+        Route::get('/status', [SystemController::class, 'status'])->name('status');
+        Route::get('/status/json', [SystemController::class, 'statusJson'])->name('status.json');
+        Route::get('/logs', [SystemController::class, 'logs'])->name('logs');
+        Route::get('/logs/stream', [SystemController::class, 'logsStream'])->name('logs.stream');
+        Route::get('/database', [SystemController::class, 'database'])->name('database');
+        Route::post('/database/query', [SystemController::class, 'queryDatabase'])->name('database.query');
+        Route::post('/action', [SystemController::class, 'action'])->name('action');
+        Route::post('/kamailio', [SystemController::class, 'kamailioAction'])->name('kamailio');
+        Route::post('/clear-cache', [SystemController::class, 'clearCache'])->name('clear-cache');
+    });
 });
 
 require __DIR__.'/auth.php';

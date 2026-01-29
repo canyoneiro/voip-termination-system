@@ -69,6 +69,11 @@
                                     <td class="text-right text-slate-600 font-medium">{{ number_format($carrier->daily_calls) }}</td>
                                     <td class="text-center">
                                         <span class="badge {{ $state['class'] }}">{{ $state['label'] }}</span>
+                                        @if(!$carrier->probing_enabled)
+                                            <span class="ml-1 text-yellow-500" title="Probing deshabilitado - Gestion manual">
+                                                <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="text-right">
                                         <div class="flex items-center justify-end space-x-1">

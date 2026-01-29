@@ -77,8 +77,9 @@ class CdrController extends Controller
     {
         $cdr->load(['customer', 'carrier']);
 
-        $traces = SipTrace::where('call_id', $cdr->call_id)
-            ->orderBy('timestamp')
+        // Use Kamailio column names: callid, time_stamp
+        $traces = SipTrace::where('callid', $cdr->call_id)
+            ->orderBy('time_stamp')
             ->get();
 
         return view('cdrs.show', compact('cdr', 'traces'));
