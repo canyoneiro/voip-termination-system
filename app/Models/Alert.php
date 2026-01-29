@@ -30,6 +30,7 @@ class Alert extends Model
         'notified_telegram' => 'boolean',
         'acknowledged' => 'boolean',
         'acknowledged_at' => 'datetime',
+        'created_at' => 'datetime',
     ];
 
     public $timestamps = false;

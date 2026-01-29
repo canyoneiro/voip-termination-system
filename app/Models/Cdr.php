@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Cdr extends Model
 {
@@ -36,6 +37,11 @@ class Cdr extends Model
         'codecs_offered',
         'codec_used',
         'user_agent',
+        'destination_prefix_id',
+        'cost',
+        'price',
+        'profit',
+        'margin_percent',
     ];
 
     protected $casts = [
@@ -48,6 +54,10 @@ class Cdr extends Model
         'pdd' => 'integer',
         'sip_code' => 'integer',
         'hangup_sip_code' => 'integer',
+        'cost' => 'decimal:6',
+        'price' => 'decimal:6',
+        'profit' => 'decimal:6',
+        'margin_percent' => 'decimal:2',
     ];
 
     protected static function boot()
@@ -73,6 +83,16 @@ class Cdr extends Model
     public function sipTraces(): HasMany
     {
         return $this->hasMany(SipTrace::class, 'call_id', 'call_id');
+    }
+
+    public function destinationPrefix(): BelongsTo
+    {
+        return $this->belongsTo(DestinationPrefix::class);
+    }
+
+    public function qosMetric(): HasOne
+    {
+        return $this->hasOne(QosMetric::class);
     }
 
     public function isAnswered(): bool

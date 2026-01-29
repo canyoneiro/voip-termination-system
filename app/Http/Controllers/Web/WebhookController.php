@@ -90,7 +90,7 @@ class WebhookController extends Controller
             'url' => $validated['url'],
             'customer_id' => $validated['customer_id'] ?: null,
             'events' => $validated['events'],
-            'active' => $request->has('active'),
+            'active' => $request->boolean('active'),
         ]);
 
         return redirect()

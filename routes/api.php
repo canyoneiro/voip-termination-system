@@ -9,6 +9,10 @@ use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Api\WebhookController;
+use App\Http\Controllers\Api\RateController;
+use App\Http\Controllers\Api\QosController;
+use App\Http\Controllers\Api\FraudController;
+use App\Http\Controllers\Api\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -113,5 +117,59 @@ Route::prefix('v1')->group(function () {
         Route::post('/{webhook}/test', [WebhookController::class, 'test']);
         Route::get('/{webhook}/deliveries', [WebhookController::class, 'deliveries']);
         Route::post('/deliveries/{delivery}/retry', [WebhookController::class, 'retryDelivery']);
+    });
+
+    // LCR & Rates
+    Route::prefix('rates')->group(function () {
+        Route::get('/lcr-lookup', [RateController::class, 'lcrLookup']);
+        Route::get('/destinations', [RateController::class, 'destinations']);
+        Route::post('/destinations', [RateController::class, 'storeDestination']);
+        Route::get('/destinations/{prefix}', [RateController::class, 'showDestination']);
+        Route::put('/destinations/{prefix}', [RateController::class, 'updateDestination']);
+        Route::get('/carrier-rates', [RateController::class, 'carrierRates']);
+        Route::post('/carrier-rates', [RateController::class, 'storeCarrierRate']);
+        Route::get('/rate-plans', [RateController::class, 'ratePlans']);
+        Route::post('/rate-plans', [RateController::class, 'storeRatePlan']);
+        Route::get('/rate-plans/{ratePlan}', [RateController::class, 'showRatePlan']);
+        Route::post('/sync-lcr', [RateController::class, 'syncLcr']);
+    });
+
+    // QoS
+    Route::prefix('qos')->group(function () {
+        Route::get('/realtime', [QosController::class, 'realtime']);
+        Route::get('/trends', [QosController::class, 'trends']);
+        Route::get('/by-customer', [QosController::class, 'byCustomer']);
+        Route::get('/by-carrier', [QosController::class, 'byCarrier']);
+        Route::get('/daily-stats', [QosController::class, 'dailyStats']);
+        Route::get('/poor-calls', [QosController::class, 'poorCalls']);
+    });
+
+    // Fraud Detection
+    Route::prefix('fraud')->group(function () {
+        Route::get('/types', [FraudController::class, 'types']);
+        Route::get('/stats', [FraudController::class, 'stats']);
+        Route::get('/risk-scores', [FraudController::class, 'riskScores']);
+        Route::get('/incidents', [FraudController::class, 'incidents']);
+        Route::get('/incidents/{incident}', [FraudController::class, 'showIncident']);
+        Route::patch('/incidents/{incident}', [FraudController::class, 'updateIncident']);
+        Route::get('/rules', [FraudController::class, 'rules']);
+        Route::post('/rules', [FraudController::class, 'storeRule']);
+        Route::get('/rules/{rule}', [FraudController::class, 'showRule']);
+        Route::put('/rules/{rule}', [FraudController::class, 'updateRule']);
+        Route::delete('/rules/{rule}', [FraudController::class, 'destroyRule']);
+    });
+
+    // Scheduled Reports
+    Route::prefix('reports')->group(function () {
+        Route::get('/types', [ReportController::class, 'types']);
+        Route::get('/', [ReportController::class, 'index']);
+        Route::post('/', [ReportController::class, 'store']);
+        Route::get('/{report}', [ReportController::class, 'show']);
+        Route::put('/{report}', [ReportController::class, 'update']);
+        Route::delete('/{report}', [ReportController::class, 'destroy']);
+        Route::post('/{report}/trigger', [ReportController::class, 'trigger']);
+        Route::get('/{report}/executions', [ReportController::class, 'executions']);
+        Route::get('/executions/{execution}', [ReportController::class, 'showExecution']);
+        Route::get('/executions/{execution}/download/{format?}', [ReportController::class, 'downloadExecution']);
     });
 });

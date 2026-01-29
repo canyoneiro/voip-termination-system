@@ -1,117 +1,232 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ $carrier->name }}</h2>
-            <a href="{{ route('carriers.edit', $carrier) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">Edit</a>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="{{ route('carriers.index') }}" class="text-gray-400 hover:text-white mr-3 p-1 hover:bg-gray-700 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </a>
+                <div>
+                    <div class="flex items-center">
+                        <h2 class="text-2xl font-bold text-white">{{ $carrier->name }}</h2>
+                        @php
+                            $stateConfig = [
+                                'active' => ['class' => 'badge-green', 'label' => 'Activo'],
+                                'probing' => ['class' => 'badge-yellow', 'label' => 'Probando'],
+                                'inactive' => ['class' => 'badge-gray', 'label' => 'Inactivo'],
+                                'disabled' => ['class' => 'badge-red', 'label' => 'Deshabilitado'],
+                            ];
+                            $state = $stateConfig[$carrier->state] ?? ['class' => 'badge-gray', 'label' => ucfirst($carrier->state)];
+                        @endphp
+                        <span class="ml-3 badge {{ $state['class'] }}">{{ $state['label'] }}</span>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-0.5 font-mono">{{ $carrier->host }}:{{ $carrier->port }} ({{ strtoupper($carrier->transport) }})</p>
+                </div>
+            </div>
+            <a href="{{ route('carriers.edit', $carrier) }}" class="btn-primary inline-flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                Editar
+            </a>
         </div>
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">{{ session('success') }}</div>
+                <div class="mb-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400">{{ session('success') }}</div>
             @endif
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Carrier Info -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Connection Info</h3>
-                    <dl class="space-y-3">
-                        <div><dt class="text-sm text-gray-500">Host</dt><dd class="font-medium">{{ $carrier->host }}:{{ $carrier->port }}</dd></div>
-                        <div><dt class="text-sm text-gray-500">Transport</dt><dd class="font-medium uppercase">{{ $carrier->transport }}</dd></div>
-                        <div><dt class="text-sm text-gray-500">Priority</dt><dd class="font-medium">{{ $carrier->priority }}</dd></div>
-                        <div><dt class="text-sm text-gray-500">Weight</dt><dd class="font-medium">{{ $carrier->weight }}</dd></div>
-                        <div><dt class="text-sm text-gray-500">State</dt>
-                            <dd>
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full
-                                    {{ $carrier->state === 'active' ? 'bg-green-100 text-green-800' :
-                                       ($carrier->state === 'probing' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                                    {{ ucfirst($carrier->state) }}
-                                </span>
-                            </dd>
-                        </div>
-                        <div><dt class="text-sm text-gray-500">Last OPTIONS</dt><dd class="text-sm">{{ $carrier->last_options_time ?? 'Never' }}</dd></div>
-                    </dl>
-                </div>
-
-                <!-- Limits & Usage -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Limits & Usage</h3>
+                <!-- Informacion de Conexion -->
+                <div class="dark-card p-5">
+                    <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Conexion y Routing</h3>
                     <dl class="space-y-4">
-                        <div>
-                            <dt class="text-sm text-gray-500">Channels</dt>
-                            <dd class="mt-1">
-                                <div class="flex justify-between text-sm mb-1">
-                                    <span>{{ $carrier->activeCalls->count() }} / {{ $carrier->max_channels }}</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ min(100, ($carrier->activeCalls->count() / $carrier->max_channels) * 100) }}%"></div>
-                                </div>
-                            </dd>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <dt class="text-xs text-gray-500 uppercase tracking-wider">Prioridad</dt>
+                                <dd class="text-2xl font-bold text-blue-400 mt-1">{{ $carrier->priority }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs text-gray-500 uppercase tracking-wider">Peso</dt>
+                                <dd class="text-2xl font-bold text-purple-400 mt-1">{{ $carrier->weight }}</dd>
+                            </div>
                         </div>
-                        <div><dt class="text-sm text-gray-500">Max CPS</dt><dd class="font-medium">{{ $carrier->max_cps }}</dd></div>
-                        <div><dt class="text-sm text-gray-500">Daily Calls</dt><dd class="font-medium">{{ $carrier->daily_calls }}</dd></div>
-                        <div><dt class="text-sm text-gray-500">Daily Minutes</dt><dd class="font-medium">{{ $carrier->daily_minutes }}</dd></div>
-                        <div><dt class="text-sm text-gray-500">Daily Failed</dt><dd class="font-medium">{{ $carrier->daily_failed }}</dd></div>
-                        <div><dt class="text-sm text-gray-500">Failover Count</dt><dd class="font-medium">{{ $carrier->failover_count }}</dd></div>
+                        <div>
+                            <dt class="text-xs text-gray-500 uppercase tracking-wider">Ultimo OPTIONS</dt>
+                            <dd class="text-sm text-gray-300 mt-1">{{ $carrier->last_options_time ? $carrier->last_options_time->diffForHumans() : 'Nunca' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-gray-500 uppercase tracking-wider">UUID</dt>
+                            <dd class="font-mono text-xs text-gray-400 bg-gray-800 p-2 rounded mt-1 break-all">{{ $carrier->uuid }}</dd>
+                        </div>
                     </dl>
                 </div>
 
-                <!-- Manipulation -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Call Manipulation</h3>
-                    <dl class="space-y-3">
-                        <div><dt class="text-sm text-gray-500">Tech Prefix</dt><dd class="font-medium font-mono">{{ $carrier->tech_prefix ?? 'None' }}</dd></div>
-                        <div><dt class="text-sm text-gray-500">Strip Digits</dt><dd class="font-medium">{{ $carrier->strip_digits }}</dd></div>
-                        <div><dt class="text-sm text-gray-500">Codecs</dt><dd class="font-medium">{{ $carrier->codecs ?? 'Default' }}</dd></div>
+                <!-- Limites y Uso -->
+                <div class="dark-card p-5">
+                    <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Capacidad en Tiempo Real</h3>
+                    <dl class="space-y-5">
                         <div>
-                            <dt class="text-sm text-gray-500">Allowed Prefixes</dt>
-                            <dd class="font-mono text-xs mt-1">{{ $carrier->prefix_filter ?: 'All allowed' }}</dd>
+                            <dt class="text-xs text-gray-500 uppercase tracking-wider mb-2">Canales en Uso</dt>
+                            <dd>
+                                @php $channelPercent = $carrier->max_channels > 0 ? ($carrier->activeCalls->count() / $carrier->max_channels) * 100 : 0; @endphp
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="font-medium text-gray-300">{{ $carrier->activeCalls->count() }} / {{ $carrier->max_channels }}</span>
+                                    <span class="text-gray-500">{{ number_format($channelPercent, 0) }}%</span>
+                                </div>
+                                <div class="w-full h-2 bg-gray-700 rounded-full">
+                                    <div class="h-full rounded-full transition-all {{ $channelPercent >= 80 ? 'bg-red-500' : ($channelPercent >= 50 ? 'bg-yellow-500' : 'bg-green-500') }}" style="width: {{ min(100, $channelPercent) }}%"></div>
+                                </div>
+                            </dd>
                         </div>
                         <div>
-                            <dt class="text-sm text-gray-500">Denied Prefixes</dt>
-                            <dd class="font-mono text-xs mt-1">{{ $carrier->prefix_deny ?: 'None' }}</dd>
+                            <dt class="text-xs text-gray-500 uppercase tracking-wider">CPS Maximo</dt>
+                            <dd class="text-gray-300 font-medium">{{ $carrier->max_cps }} llamadas/segundo</dd>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 pt-3 border-t border-gray-700/50">
+                            <div class="text-center p-3 bg-gray-800/50 rounded-lg">
+                                <div class="text-xl font-bold text-green-400">{{ number_format($carrier->daily_calls) }}</div>
+                                <div class="text-xs text-gray-500">Llamadas hoy</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-800/50 rounded-lg">
+                                <div class="text-xl font-bold text-blue-400">{{ number_format($carrier->daily_minutes) }}</div>
+                                <div class="text-xs text-gray-500">Minutos hoy</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center p-3 bg-red-500/10 rounded-lg">
+                                <div class="text-xl font-bold text-red-400">{{ number_format($carrier->daily_failed) }}</div>
+                                <div class="text-xs text-gray-500">Fallidas hoy</div>
+                            </div>
+                            <div class="text-center p-3 bg-yellow-500/10 rounded-lg">
+                                <div class="text-xl font-bold text-yellow-400">{{ number_format($carrier->failover_count) }}</div>
+                                <div class="text-xs text-gray-500">Failovers</div>
+                            </div>
                         </div>
                     </dl>
+                </div>
+
+                <!-- Manipulacion -->
+                <div class="dark-card p-5">
+                    <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Manipulacion de Llamadas</h3>
+                    <dl class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <dt class="text-xs text-gray-500 uppercase tracking-wider">Prefijo Tecnico</dt>
+                                <dd class="font-mono text-gray-300 mt-1">{{ $carrier->tech_prefix ?: '-' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs text-gray-500 uppercase tracking-wider">Strip Digits</dt>
+                                <dd class="font-mono text-gray-300 mt-1">{{ $carrier->strip_digits }}</dd>
+                            </div>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-gray-500 uppercase tracking-wider">Codecs</dt>
+                            <dd class="font-mono text-sm text-gray-300 mt-1">{{ $carrier->codecs ?: 'Por defecto' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-gray-500 uppercase tracking-wider">Prefijos Permitidos</dt>
+                            <dd class="font-mono text-xs text-gray-400 bg-gray-800 p-2 rounded mt-1 max-h-16 overflow-y-auto scrollbar-dark whitespace-pre-line">{{ $carrier->prefix_filter ?: 'Todos' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-gray-500 uppercase tracking-wider">Prefijos Denegados</dt>
+                            <dd class="font-mono text-xs text-gray-400 bg-gray-800 p-2 rounded mt-1 max-h-16 overflow-y-auto scrollbar-dark whitespace-pre-line">{{ $carrier->prefix_deny ?: 'Ninguno' }}</dd>
+                        </div>
+                    </dl>
+                    @if($carrier->notes)
+                    <div class="mt-4 pt-4 border-t border-gray-700/50">
+                        <dt class="text-xs text-gray-500 uppercase tracking-wider">Notas</dt>
+                        <dd class="text-sm text-gray-300 bg-yellow-500/10 border border-yellow-500/20 p-2 rounded mt-1">{{ $carrier->notes }}</dd>
+                    </div>
+                    @endif
                 </div>
             </div>
 
-            <!-- Recent CDRs -->
-            <div class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Recent Calls</h3>
-                        <a href="{{ route('cdrs.index', ['carrier_id' => $carrier->id]) }}" class="text-indigo-600 hover:text-indigo-800 text-sm">View all &rarr;</a>
+            <!-- Llamadas Activas -->
+            @if($carrier->activeCalls->count() > 0)
+            <div class="mt-6 dark-card overflow-hidden">
+                <div class="px-4 py-3 border-b border-gray-700/50 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-white">Llamadas Activas en este Carrier</h3>
+                        <p class="text-xs text-gray-500">Conversaciones enrutadas por este proveedor</p>
                     </div>
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <span class="badge badge-green animate-pulse">{{ $carrier->activeCalls->count() }} en curso</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full dark-table">
+                        <thead>
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Caller</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Callee</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="text-left">Inicio</th>
+                                <th class="text-left">Cliente</th>
+                                <th class="text-left">Origen</th>
+                                <th class="text-left">Destino</th>
+                                <th class="text-left">Duracion</th>
+                                <th class="text-center">Estado</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
+                        <tbody>
+                            @foreach($carrier->activeCalls as $call)
+                                <tr class="bg-green-500/5">
+                                    <td class="text-gray-400 text-sm">{{ $call->start_time->format('H:i:s') }}</td>
+                                    <td class="text-gray-300 text-sm">{{ $call->customer->name ?? '-' }}</td>
+                                    <td class="font-mono text-sm text-gray-300">{{ $call->caller }}</td>
+                                    <td class="font-mono text-sm text-gray-300">{{ $call->callee }}</td>
+                                    <td class="text-gray-400 text-sm">{{ $call->start_time->diffForHumans(null, true) }}</td>
+                                    <td class="text-center">
+                                        @if($call->answered)
+                                            <span class="badge badge-green">Contestada</span>
+                                        @else
+                                            <span class="badge badge-yellow">Sonando</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @endif
+
+            <!-- Llamadas Recientes -->
+            <div class="mt-6 dark-card overflow-hidden">
+                <div class="px-4 py-3 border-b border-gray-700/50 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-white">Llamadas Recientes</h3>
+                        <p class="text-xs text-gray-500">Ultimas llamadas procesadas por este carrier</p>
+                    </div>
+                    <a href="{{ route('cdrs.index', ['carrier_id' => $carrier->id]) }}" class="text-xs text-blue-400 hover:text-blue-300">Ver todas →</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full dark-table">
+                        <thead>
+                            <tr>
+                                <th class="text-left">Fecha/Hora</th>
+                                <th class="text-left">Cliente</th>
+                                <th class="text-left">Origen</th>
+                                <th class="text-left">Destino</th>
+                                <th class="text-right">Duracion</th>
+                                <th class="text-center">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             @forelse($recentCdrs as $cdr)
                                 <tr>
-                                    <td class="px-4 py-2 text-sm text-gray-500">{{ $cdr->start_time->format('Y-m-d H:i:s') }}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $cdr->customer->name ?? '-' }}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $cdr->caller }}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $cdr->callee }}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-500">{{ gmdate('i:s', $cdr->duration) }}</td>
-                                    <td class="px-4 py-2 text-sm">
+                                    <td class="text-gray-400 text-sm">{{ $cdr->start_time->format('d/m H:i:s') }}</td>
+                                    <td class="text-gray-300 text-sm">{{ $cdr->customer->name ?? '-' }}</td>
+                                    <td class="font-mono text-sm text-gray-300">{{ $cdr->caller }}</td>
+                                    <td class="font-mono text-sm text-gray-300">{{ $cdr->callee }}</td>
+                                    <td class="text-right text-gray-400 text-sm">{{ gmdate('i:s', $cdr->duration) }}</td>
+                                    <td class="text-center">
                                         @if($cdr->answer_time)
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ $cdr->sip_code }}</span>
+                                            <span class="badge badge-green">{{ $cdr->sip_code }}</span>
                                         @else
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">{{ $cdr->sip_code }}</span>
+                                            <span class="badge badge-red">{{ $cdr->sip_code }}</span>
                                         @endif
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">No calls yet</td></tr>
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-gray-500">No hay llamadas registradas</td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>

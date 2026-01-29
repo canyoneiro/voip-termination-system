@@ -1,107 +1,165 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">IP Blacklist</h2>
+        <div>
+            <h2 class="text-2xl font-bold text-white">Lista Negra de IPs</h2>
+            <p class="text-sm text-gray-400 mt-0.5">IPs bloqueadas para proteger el sistema</p>
+        </div>
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">{{ session('success') }}</div>
+                <div class="mb-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="mb-4 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">{{ session('error') }}</div>
             @endif
 
-            <!-- Add IP Form -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+            <!-- Formulario Agregar IP -->
+            <div class="dark-card mb-6">
+                <div class="px-4 py-3 border-b border-gray-700/50 bg-red-500/10">
+                    <h3 class="text-sm font-semibold text-red-400">Bloquear Nueva IP</h3>
+                </div>
                 <form action="{{ route('blacklist.store') }}" method="POST" class="p-4">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-xs font-medium text-gray-500">IP Address</label>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Direccion IP *</label>
                             <input type="text" name="ip_address" required placeholder="192.168.1.1"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                            @error('ip_address')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                class="dark-input w-full text-sm py-1.5 px-2 font-mono">
+                            @error('ip_address')<p class="mt-1 text-xs text-red-400">{{ $message }}</p>@enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-500">Reason</label>
-                            <input type="text" name="reason" required placeholder="Reason for blocking"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Motivo *</label>
+                            <input type="text" name="reason" required placeholder="Motivo del bloqueo"
+                                class="dark-input w-full text-sm py-1.5 px-2">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-500">Expires At (optional)</label>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Expira (opcional)</label>
                             <input type="datetime-local" name="expires_at"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                class="dark-input w-full text-sm py-1.5 px-2">
                         </div>
                         <div class="flex items-end gap-4">
                             <label class="flex items-center">
                                 <input type="checkbox" name="permanent" value="1"
-                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <span class="ml-2 text-sm text-gray-700">Permanent</span>
+                                    class="rounded border-gray-600 text-red-500 bg-gray-700 focus:ring-red-500/20">
+                                <span class="ml-2 text-sm text-gray-400">Permanente</span>
                             </label>
-                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">Block IP</button>
+                            <button type="submit" class="btn-danger text-sm">
+                                Bloquear IP
+                            </button>
                         </div>
                     </div>
                 </form>
             </div>
 
-            <!-- Blacklist Table -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <!-- Resumen -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="stat-card blue">
+                    <div class="text-xs text-gray-500 uppercase tracking-wider">Total Bloqueadas</div>
+                    <div class="text-2xl font-bold text-white mt-1">{{ $blacklist->total() }}</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="text-xs text-gray-500 uppercase tracking-wider">Permanentes</div>
+                    <div class="text-2xl font-bold text-red-400 mt-1">{{ $blacklist->where('permanent', true)->count() }}</div>
+                </div>
+                <div class="stat-card yellow">
+                    <div class="text-xs text-gray-500 uppercase tracking-wider">Temporales</div>
+                    <div class="text-2xl font-bold text-yellow-400 mt-1">{{ $blacklist->where('permanent', false)->count() }}</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="text-xs text-gray-500 uppercase tracking-wider">Por Fail2Ban</div>
+                    <div class="text-2xl font-bold text-purple-400 mt-1">{{ $blacklist->where('source', 'fail2ban')->count() }}</div>
+                </div>
+            </div>
+
+            <!-- Tabla de Blacklist -->
+            <div class="dark-card overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="w-full dark-table">
+                        <thead>
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP Address</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Attempts</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                <th class="text-left">Direccion IP</th>
+                                <th class="text-left">Motivo</th>
+                                <th class="text-center w-24">Origen</th>
+                                <th class="text-center w-20">Intentos</th>
+                                <th class="text-left w-32">Expira</th>
+                                <th class="text-center w-28">Estado</th>
+                                <th class="text-right w-44">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody>
                             @forelse($blacklist as $entry)
+                                @php
+                                    $sourceLabels = [
+                                        'manual' => 'Manual',
+                                        'fail2ban' => 'Fail2Ban',
+                                        'flood_detection' => 'Anti-Flood',
+                                        'scanner' => 'Escaner',
+                                    ];
+                                @endphp
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap font-mono text-sm">{{ $entry->ip_address }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">{{ Str::limit($entry->reason, 40) }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $entry->source }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $entry->attempts }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td>
+                                        <span class="font-mono text-sm bg-gray-800 px-2 py-1 rounded text-gray-200">{{ $entry->ip_address }}</span>
+                                    </td>
+                                    <td class="text-sm text-gray-400">{{ Str::limit($entry->reason, 40) }}</td>
+                                    <td class="text-center">
+                                        <span class="badge {{ $entry->source === 'manual' ? 'badge-blue' : ($entry->source === 'fail2ban' ? 'badge-purple' : ($entry->source === 'flood_detection' ? 'badge-red' : 'badge-gray')) }}">
+                                            {{ $sourceLabels[$entry->source] ?? ucfirst($entry->source) }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center text-gray-400 text-sm">{{ number_format($entry->attempts) }}</td>
+                                    <td class="text-sm text-gray-400">
                                         @if($entry->permanent)
-                                            <span class="text-red-600 font-medium">Permanent</span>
+                                            <span class="text-red-400 font-medium">Permanente</span>
                                         @elseif($entry->expires_at)
                                             {{ \Carbon\Carbon::parse($entry->expires_at)->diffForHumans() }}
                                         @else
                                             -
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="text-center">
                                         @if($entry->permanent)
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Permanent</span>
+                                            <span class="badge badge-red">Permanente</span>
                                         @elseif($entry->expires_at && \Carbon\Carbon::parse($entry->expires_at)->isPast())
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Expired</span>
+                                            <span class="badge badge-gray">Expirado</span>
                                         @else
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Active</span>
+                                            <span class="badge badge-yellow">Activo</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <form action="{{ route('blacklist.toggle-permanent', $entry) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit" class="text-indigo-600 hover:text-indigo-900 mr-3">
-                                                {{ $entry->permanent ? 'Make Temp' : 'Make Perm' }}
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('blacklist.destroy', $entry) }}" method="POST" class="inline" onsubmit="return confirm('Remove this IP from blacklist?')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">Remove</button>
-                                        </form>
+                                    <td class="text-right">
+                                        <div class="flex items-center justify-end space-x-2">
+                                            <form action="{{ route('blacklist.toggle-permanent', $entry) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="text-blue-400 hover:text-blue-300 text-xs">
+                                                    {{ $entry->permanent ? 'Temporal' : 'Permanente' }}
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('blacklist.destroy', $entry) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar esta IP de la lista negra?')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="text-red-400 hover:text-red-300 text-xs">Eliminar</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">No blocked IPs</td></tr>
+                                <tr>
+                                    <td colspan="7" class="text-center py-12">
+                                        <svg class="mx-auto h-12 w-12 text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                        </svg>
+                                        <p class="text-gray-500">No hay IPs bloqueadas</p>
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-                <div class="px-6 py-3 border-t">{{ $blacklist->links() }}</div>
+                @if($blacklist->hasPages())
+                <div class="px-4 py-3 border-t border-gray-700/50">
+                    {{ $blacklist->links() }}
+                </div>
+                @endif
             </div>
         </div>
     </div>

@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Customer extends Model
 {
@@ -20,6 +22,8 @@ class Customer extends Model
         'used_daily_minutes',
         'used_monthly_minutes',
         'active',
+        'portal_enabled',
+        'rate_plan_id',
         'notes',
         'alert_email',
         'alert_telegram_chat_id',
@@ -31,6 +35,7 @@ class Customer extends Model
 
     protected $casts = [
         'active' => 'boolean',
+        'portal_enabled' => 'boolean',
         'notify_low_balance' => 'boolean',
         'notify_channels_warning' => 'boolean',
         'traces_enabled' => 'boolean',
@@ -41,6 +46,7 @@ class Customer extends Model
         'max_monthly_minutes' => 'integer',
         'used_daily_minutes' => 'integer',
         'used_monthly_minutes' => 'integer',
+        'rate_plan_id' => 'integer',
     ];
 
     protected static function boot()
@@ -81,6 +87,31 @@ class Customer extends Model
     public function webhooks(): HasMany
     {
         return $this->hasMany(WebhookEndpoint::class);
+    }
+
+    public function ratePlan(): BelongsTo
+    {
+        return $this->belongsTo(RatePlan::class);
+    }
+
+    public function customerRates(): HasMany
+    {
+        return $this->hasMany(CustomerRate::class);
+    }
+
+    public function portalSettings(): HasOne
+    {
+        return $this->hasOne(CustomerPortalSettings::class);
+    }
+
+    public function portalUsers(): HasMany
+    {
+        return $this->hasMany(CustomerUser::class);
+    }
+
+    public function fraudIncidents(): HasMany
+    {
+        return $this->hasMany(FraudIncident::class);
     }
 
     public function getActiveCallsCountAttribute(): int

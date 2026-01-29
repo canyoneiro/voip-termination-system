@@ -1,82 +1,94 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <!-- Primary Navigation Menu -->
+<nav x-data="{ open: false }" class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="text-xl font-bold text-indigo-600">
-                        VoIP Panel
+                    <a href="{{ route('dashboard') }}" class="flex items-center space-x-3">
+                        <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-lg font-bold text-slate-800">VoIP Panel</span>
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        Dashboard
-                    </x-nav-link>
-                    <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
-                        Customers
-                    </x-nav-link>
-                    <x-nav-link :href="route('carriers.index')" :active="request()->routeIs('carriers.*')">
+                <div class="hidden sm:flex sm:ml-10 space-x-1">
+                    <a href="{{ route('dashboard') }}" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
+                        Panel
+                    </a>
+                    <a href="{{ route('customers.index') }}" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('customers.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Clientes
+                    </a>
+                    <a href="{{ route('carriers.index') }}" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('carriers.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path></svg>
                         Carriers
-                    </x-nav-link>
-                    <x-nav-link :href="route('cdrs.index')" :active="request()->routeIs('cdrs.*')">
+                    </a>
+                    <a href="{{ route('cdrs.index') }}" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('cdrs.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         CDRs
-                    </x-nav-link>
-                    <x-nav-link :href="route('alerts.index')" :active="request()->routeIs('alerts.*')">
-                        Alerts
+                    </a>
+                    <a href="{{ route('alerts.index') }}" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('alerts.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        Alertas
                         @php $unackCount = \App\Models\Alert::where('acknowledged', false)->count(); @endphp
                         @if($unackCount > 0)
-                            <span class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">{{ $unackCount }}</span>
+                            <span class="ml-1.5 px-1.5 py-0.5 text-xs font-bold bg-red-500 text-white rounded-full animate-pulse">{{ $unackCount }}</span>
                         @endif
-                    </x-nav-link>
-                    <x-nav-link :href="route('blacklist.index')" :active="request()->routeIs('blacklist.*')">
+                    </a>
+                    <a href="{{ route('blacklist.index') }}" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('blacklist.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                         Blacklist
-                    </x-nav-link>
-                    <x-nav-link :href="route('webhooks.index')" :active="request()->routeIs('webhooks.*')">
+                    </a>
+                    <a href="{{ route('webhooks.index') }}" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('webhooks.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                         Webhooks
-                    </x-nav-link>
+                    </a>
                 </div>
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+            <div class="hidden sm:flex sm:items-center sm:ml-6">
+                <!-- Live Stats -->
+                <div class="flex items-center space-x-4 mr-6">
+                    @php $activeCallsCount = \App\Models\ActiveCall::count(); @endphp
+                    <div class="flex items-center px-3 py-1.5 bg-slate-100 rounded-full">
+                        <span class="w-2 h-2 rounded-full {{ $activeCallsCount > 0 ? 'bg-green-500 animate-pulse' : 'bg-slate-400' }} mr-2"></span>
+                        <span class="font-semibold text-slate-700 text-sm">{{ $activeCallsCount }}</span>
+                        <span class="ml-1 text-slate-500 text-sm">activas</span>
+                    </div>
+                </div>
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="flex items-center space-x-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors px-3 py-2 rounded-lg hover:bg-slate-100">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+                            {{ substr(Auth::user()->name, 0, 1) }}
+                        </div>
+                        <span>{{ Auth::user()->name }}</span>
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
 
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            Profile
-                        </x-dropdown-link>
-
-                        <!-- Authentication -->
+                    <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 rounded-xl bg-white border border-slate-200 shadow-lg py-1 z-50">
+                        <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                            Mi Perfil
+                        </a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                Log Out
-                            </x-dropdown-link>
+                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                Cerrar Sesion
+                            </button>
                         </form>
-                    </x-slot>
-                </x-dropdown>
+                    </div>
+                </div>
             </div>
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-none transition-colors">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -87,52 +99,38 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                Dashboard
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
-                Customers
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('carriers.index')" :active="request()->routeIs('carriers.*')">
-                Carriers
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('cdrs.index')" :active="request()->routeIs('cdrs.*')">
-                CDRs
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('alerts.index')" :active="request()->routeIs('alerts.*')">
-                Alerts
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('blacklist.index')" :active="request()->routeIs('blacklist.*')">
-                Blacklist
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('webhooks.index')" :active="request()->routeIs('webhooks.*')">
-                Webhooks
-            </x-responsive-nav-link>
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white border-t border-slate-200">
+        <div class="pt-2 pb-3 space-y-1 px-4">
+            <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Panel</a>
+            <a href="{{ route('customers.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('customers.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Clientes</a>
+            <a href="{{ route('carriers.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('carriers.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Carriers</a>
+            <a href="{{ route('cdrs.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('cdrs.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">CDRs</a>
+            <a href="{{ route('alerts.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('alerts.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Alertas</a>
+            <a href="{{ route('blacklist.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('blacklist.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Blacklist</a>
+            <a href="{{ route('webhooks.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('webhooks.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Webhooks</a>
         </div>
 
         <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+        <div class="pt-4 pb-3 border-t border-slate-200">
+            <div class="px-4 flex items-center">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
+                    {{ substr(Auth::user()->name, 0, 1) }}
+                </div>
+                <div class="ml-3">
+                    <div class="font-medium text-base text-slate-800">{{ Auth::user()->name }}</div>
+                    <div class="font-medium text-sm text-slate-500">{{ Auth::user()->email }}</div>
+                </div>
             </div>
 
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    Profile
-                </x-responsive-nav-link>
-
-                <!-- Authentication -->
+            <div class="mt-3 space-y-1 px-4">
+                <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-600 hover:bg-slate-100">
+                    Mi Perfil
+                </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        Log Out
-                    </x-responsive-nav-link>
+                    <button type="submit" class="block w-full text-left px-3 py-2 rounded-lg text-base font-medium text-slate-600 hover:bg-slate-100">
+                        Cerrar Sesion
+                    </button>
                 </form>
             </div>
         </div>

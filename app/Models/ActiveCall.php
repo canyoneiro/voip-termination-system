@@ -23,8 +23,8 @@ class ActiveCall extends Model
     ];
 
     protected $casts = [
-        'start_time' => 'datetime:Y-m-d H:i:s.v',
-        'answer_time' => 'datetime:Y-m-d H:i:s.v',
+        'start_time' => 'datetime',
+        'answer_time' => 'datetime',
         'answered' => 'boolean',
     ];
 
