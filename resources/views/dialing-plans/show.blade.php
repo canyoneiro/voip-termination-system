@@ -1,386 +1,362 @@
-@extends('layouts.app')
-
-@section('title', 'Dialing Plan: ' . $dialingPlan->name)
-@section('page-title', $dialingPlan->name)
-
-@section('page-actions')
-    <a href="{{ route('dialing-plans.edit', $dialingPlan) }}" class="btn btn-secondary">
-        <i class="fas fa-edit me-1"></i> Edit Plan
-    </a>
-@endsection
-
-@section('content')
-<div class="row">
-    <!-- Plan Details -->
-    <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Plan Details</h5>
-            </div>
-            <div class="card-body">
-                <dl class="row mb-0">
-                    <dt class="col-5">Status</dt>
-                    <dd class="col-7">
-                        @if($dialingPlan->active)
-                            <span class="badge bg-success">Active</span>
-                        @else
-                            <span class="badge bg-secondary">Inactive</span>
-                        @endif
-                    </dd>
-
-                    <dt class="col-5">Default Action</dt>
-                    <dd class="col-7">
-                        <span class="badge bg-{{ $dialingPlan->default_action === 'allow' ? 'success' : 'danger' }}">
-                            {{ strtoupper($dialingPlan->default_action) }}
-                        </span>
-                    </dd>
-
-                    <dt class="col-5">Block Premium</dt>
-                    <dd class="col-7">
-                        @if($dialingPlan->block_premium)
-                            <span class="badge bg-warning text-dark">Yes</span>
-                        @else
-                            <span class="badge bg-secondary">No</span>
-                        @endif
-                    </dd>
-
-                    <dt class="col-5">Rules</dt>
-                    <dd class="col-7">{{ $dialingPlan->rules->count() }}</dd>
-
-                    <dt class="col-5">Customers</dt>
-                    <dd class="col-7">{{ $dialingPlan->customers->count() }}</dd>
-                </dl>
-
-                @if($dialingPlan->description)
-                    <hr>
-                    <p class="text-muted mb-0 small">{{ $dialingPlan->description }}</p>
-                @endif
-            </div>
-        </div>
-
-        <!-- Test Number -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-vial me-2"></i>Test Number</h5>
-            </div>
-            <div class="card-body">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="testNumber" placeholder="e.g., 34612345678">
-                    <button class="btn btn-primary" type="button" id="btnTestNumber">
-                        <i class="fas fa-check"></i> Test
-                    </button>
-                </div>
-                <div id="testResult" class="mt-3" style="display: none;"></div>
-            </div>
-        </div>
-
-        <!-- Assigned Customers -->
-        @if($dialingPlan->customers->isNotEmpty())
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Assigned Customers</h5>
-            </div>
-            <ul class="list-group list-group-flush">
-                @foreach($dialingPlan->customers as $customer)
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <a href="{{ route('customers.show', $customer) }}">{{ $customer->name }}</a>
-                    @if($customer->active)
-                        <span class="badge bg-success">Active</span>
-                    @else
-                        <span class="badge bg-secondary">Inactive</span>
-                    @endif
-                </li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
-    </div>
-
-    <!-- Rules -->
-    <div class="col-lg-8">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Rules</h5>
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="{{ route('dialing-plans.index') }}" class="text-slate-400 hover:text-slate-600 mr-3 p-1 hover:bg-slate-100 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </a>
                 <div>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importModal">
-                        <i class="fas fa-file-import me-1"></i> Import
-                    </button>
-                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addRuleModal">
-                        <i class="fas fa-plus me-1"></i> Add Rule
-                    </button>
+                    <h2 class="text-2xl font-bold text-slate-800">{{ $dialingPlan->name }}</h2>
+                    <p class="text-sm text-slate-500 mt-0.5">{{ $dialingPlan->rules->count() }} reglas configuradas</p>
                 </div>
             </div>
-            <div class="card-body p-0">
-                @if($dialingPlan->rules->isEmpty())
-                    <div class="text-center py-5">
-                        <i class="fas fa-list-alt fa-3x text-muted mb-3"></i>
-                        <h5>No Rules</h5>
-                        <p class="text-muted">Add rules to control which destinations can be dialed.</p>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRuleModal">
-                            <i class="fas fa-plus me-1"></i> Add First Rule
-                        </button>
-                    </div>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th width="60">Priority</th>
-                                    <th width="80">Type</th>
-                                    <th>Pattern</th>
-                                    <th>Description</th>
-                                    <th width="80">Status</th>
-                                    <th width="120">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($dialingPlan->rules as $rule)
-                                <tr class="{{ !$rule->active ? 'table-secondary' : '' }}">
-                                    <td><span class="badge bg-secondary">{{ $rule->priority }}</span></td>
-                                    <td>{!! $rule->type_badge !!}</td>
-                                    <td><code>{{ $rule->pattern }}</code></td>
-                                    <td class="text-muted">{{ $rule->description ?: '-' }}</td>
-                                    <td>
-                                        @if($rule->active)
-                                            <span class="badge bg-success">Active</span>
-                                        @else
-                                            <span class="badge bg-secondary">Inactive</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <button type="button" class="btn btn-outline-secondary"
-                                                    onclick="editRule({{ $rule->id }}, '{{ $rule->type }}', '{{ $rule->pattern }}', '{{ $rule->description }}', {{ $rule->priority }}, {{ $rule->active ? 'true' : 'false' }})">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <form action="{{ route('dialing-plans.rules.destroy', [$dialingPlan, $rule]) }}"
-                                                  method="POST" class="d-inline"
-                                                  onsubmit="return confirm('Delete this rule?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-            </div>
+            <a href="{{ route('dialing-plans.edit', $dialingPlan) }}" class="btn-secondary">
+                <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                Editar Plan
+            </a>
         </div>
+    </x-slot>
 
-        <!-- How Rules Work -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>How Rules Work</h5>
-            </div>
-            <div class="card-body">
-                <ol class="mb-0">
-                    <li class="mb-2">
-                        @if($dialingPlan->block_premium)
-                            <strong>Premium check:</strong> Premium destinations are automatically blocked.
-                        @else
-                            <strong>Premium check:</strong> Premium destinations are allowed (not blocked).
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            @if(session('success'))
+                <div class="mb-4 p-4 rounded-lg bg-green-50 border border-green-200 text-green-700">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Sidebar -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Plan Details -->
+                    <div class="dark-card p-5">
+                        <h3 class="text-sm font-semibold text-slate-700 mb-4">Configuracion</h3>
+                        <dl class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <dt class="text-slate-500">Estado</dt>
+                                <dd>
+                                    @if($dialingPlan->active)
+                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-700">Activo</span>
+                                    @else
+                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">Inactivo</span>
+                                    @endif
+                                </dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-slate-500">Default</dt>
+                                <dd>
+                                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full {{ $dialingPlan->default_action === 'allow' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                        {{ strtoupper($dialingPlan->default_action) }}
+                                    </span>
+                                </dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-slate-500">Premium</dt>
+                                <dd>
+                                    @if($dialingPlan->block_premium)
+                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">Bloqueado</span>
+                                    @else
+                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">Permitido</span>
+                                    @endif
+                                </dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-slate-500">Clientes</dt>
+                                <dd class="font-mono">{{ $dialingPlan->customers->count() }}</dd>
+                            </div>
+                        </dl>
+                        @if($dialingPlan->description)
+                            <div class="mt-4 pt-4 border-t border-slate-100">
+                                <p class="text-xs text-slate-500">{{ $dialingPlan->description }}</p>
+                            </div>
                         @endif
-                    </li>
-                    <li class="mb-2">
-                        <strong>Rules:</strong> Rules are evaluated in priority order (lowest first). First matching rule wins.
-                    </li>
-                    <li>
-                        <strong>Default:</strong> If no rule matches, the default action is
-                        <span class="badge bg-{{ $dialingPlan->default_action === 'allow' ? 'success' : 'danger' }}">
-                            {{ strtoupper($dialingPlan->default_action) }}
-                        </span>
-                    </li>
-                </ol>
+                    </div>
+
+                    <!-- Test Number -->
+                    <div class="dark-card p-5">
+                        <h3 class="text-sm font-semibold text-slate-700 mb-4">Probar Numero</h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="testNumber" placeholder="34612345678"
+                                class="flex-1 rounded-lg border-slate-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                            <button onclick="testNumber()" class="btn-primary px-3">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        </div>
+                        <div id="testResult" class="mt-3 hidden"></div>
+                    </div>
+
+                    <!-- Assigned Customers -->
+                    @if($dialingPlan->customers->isNotEmpty())
+                    <div class="dark-card p-5">
+                        <h3 class="text-sm font-semibold text-slate-700 mb-4">Clientes Asignados</h3>
+                        <ul class="space-y-2">
+                            @foreach($dialingPlan->customers as $customer)
+                            <li class="flex items-center justify-between text-sm">
+                                <a href="{{ route('customers.show', $customer) }}" class="text-blue-600 hover:text-blue-800">{{ $customer->name }}</a>
+                                @if($customer->active)
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                @else
+                                    <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                                @endif
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Rules -->
+                <div class="lg:col-span-2">
+                    <div class="dark-card">
+                        <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="text-sm font-semibold text-slate-700">Reglas</h3>
+                            <div class="flex gap-2">
+                                <button onclick="document.getElementById('importModal').classList.remove('hidden')" class="btn-secondary text-xs py-1.5 px-3">
+                                    Importar
+                                </button>
+                                <button onclick="document.getElementById('addRuleModal').classList.remove('hidden')" class="btn-primary text-xs py-1.5 px-3">
+                                    + Añadir Regla
+                                </button>
+                            </div>
+                        </div>
+
+                        @if($dialingPlan->rules->isEmpty())
+                            <div class="p-12 text-center">
+                                <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                <p class="text-slate-500 mb-3">Sin reglas configuradas</p>
+                                <button onclick="document.getElementById('addRuleModal').classList.remove('hidden')" class="btn-primary text-sm">
+                                    Añadir Primera Regla
+                                </button>
+                            </div>
+                        @else
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-slate-50">
+                                        <tr class="text-xs font-medium text-slate-500 uppercase">
+                                            <th class="px-4 py-3 text-center w-16">Prior.</th>
+                                            <th class="px-4 py-3 text-center w-20">Tipo</th>
+                                            <th class="px-4 py-3 text-left">Patron</th>
+                                            <th class="px-4 py-3 text-left">Descripcion</th>
+                                            <th class="px-4 py-3 text-center w-20">Estado</th>
+                                            <th class="px-4 py-3 text-center w-24">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        @foreach($dialingPlan->rules as $rule)
+                                        <tr class="{{ !$rule->active ? 'bg-slate-50 opacity-60' : '' }} hover:bg-slate-50">
+                                            <td class="px-4 py-3 text-center">
+                                                <span class="text-xs font-mono text-slate-500">{{ $rule->priority }}</span>
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full {{ $rule->type === 'allow' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                    {{ strtoupper($rule->type) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <code class="text-sm font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded">{{ $rule->pattern }}</code>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-slate-500">{{ $rule->description ?: '-' }}</td>
+                                            <td class="px-4 py-3 text-center">
+                                                @if($rule->active)
+                                                    <span class="w-2 h-2 inline-block rounded-full bg-green-500"></span>
+                                                @else
+                                                    <span class="w-2 h-2 inline-block rounded-full bg-slate-300"></span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                <div class="flex items-center justify-center gap-1">
+                                                    <button onclick="editRule({{ json_encode($rule) }})" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                                    </button>
+                                                    <form action="{{ route('dialing-plans.rules.destroy', [$dialingPlan, $rule]) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar esta regla?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- How it works -->
+                    <div class="dark-card p-5 mt-6">
+                        <h3 class="text-sm font-semibold text-slate-700 mb-3">Como funciona</h3>
+                        <ol class="text-sm text-slate-600 space-y-2">
+                            <li class="flex items-start gap-2">
+                                <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs flex-shrink-0">1</span>
+                                @if($dialingPlan->block_premium)
+                                    <span>Los destinos <strong>premium</strong> se bloquean automaticamente.</span>
+                                @else
+                                    <span>Los destinos premium estan permitidos.</span>
+                                @endif
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs flex-shrink-0">2</span>
+                                <span>Las reglas se evaluan por <strong>prioridad</strong> (menor primero). La primera que coincide gana.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs flex-shrink-0">3</span>
+                                <span>Si ninguna regla coincide, se aplica la accion por defecto: <strong class="{{ $dialingPlan->default_action === 'allow' ? 'text-green-600' : 'text-red-600' }}">{{ strtoupper($dialingPlan->default_action) }}</strong></span>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Add Rule Modal -->
-<div class="modal fade" id="addRuleModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <!-- Add Rule Modal -->
+    <div id="addRuleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Añadir Regla</h3>
             <form action="{{ route('dialing-plans.rules.store', $dialingPlan) }}" method="POST">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Rule</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="type" class="form-label">Type</label>
-                        <select class="form-select" id="type" name="type" required>
-                            <option value="allow">Allow</option>
-                            <option value="deny">Deny</option>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
+                        <select name="type" class="w-full rounded-lg border-slate-300">
+                            <option value="allow">ALLOW - Permitir</option>
+                            <option value="deny">DENY - Bloquear</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="pattern" class="form-label">Pattern</label>
-                        <input type="text" class="form-control" id="pattern" name="pattern" required
-                               placeholder="e.g., 34* or 1800*">
-                        <div class="form-text">Use * as wildcard. Example: 346* matches all Spanish mobile.</div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Patron</label>
+                        <input type="text" name="pattern" required placeholder="34* o 1800*" class="w-full rounded-lg border-slate-300">
+                        <p class="mt-1 text-xs text-slate-500">Usa * como comodin. Ej: 346* = moviles España</p>
                     </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description (optional)</label>
-                        <input type="text" class="form-control" id="description" name="description"
-                               placeholder="e.g., Spanish Mobile">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Descripcion</label>
+                        <input type="text" name="description" placeholder="Ej: España Movil" class="w-full rounded-lg border-slate-300">
                     </div>
-                    <div class="mb-3">
-                        <label for="priority" class="form-label">Priority</label>
-                        <input type="number" class="form-control" id="priority" name="priority"
-                               value="100" min="1" max="9999">
-                        <div class="form-text">Lower numbers are evaluated first.</div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Prioridad</label>
+                        <input type="number" name="priority" value="100" min="1" max="9999" class="w-full rounded-lg border-slate-300">
+                        <p class="mt-1 text-xs text-slate-500">Menor = se evalua primero</p>
                     </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="addActive" name="active" value="1" checked>
-                        <label class="form-check-label" for="addActive">Active</label>
-                    </div>
+                    <label class="flex items-center">
+                        <input type="hidden" name="active" value="0">
+                        <input type="checkbox" name="active" value="1" checked class="rounded border-slate-300 text-blue-600">
+                        <span class="ml-2 text-sm text-slate-600">Regla activa</span>
+                    </label>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Rule</button>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="document.getElementById('addRuleModal').classList.add('hidden')" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Añadir</button>
                 </div>
             </form>
         </div>
     </div>
-</div>
 
-<!-- Edit Rule Modal -->
-<div class="modal fade" id="editRuleModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <!-- Edit Rule Modal -->
+    <div id="editRuleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Editar Regla</h3>
             <form id="editRuleForm" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Rule</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="editType" class="form-label">Type</label>
-                        <select class="form-select" id="editType" name="type" required>
-                            <option value="allow">Allow</option>
-                            <option value="deny">Deny</option>
+                @csrf @method('PUT')
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
+                        <select name="type" id="editType" class="w-full rounded-lg border-slate-300">
+                            <option value="allow">ALLOW - Permitir</option>
+                            <option value="deny">DENY - Bloquear</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="editPattern" class="form-label">Pattern</label>
-                        <input type="text" class="form-control" id="editPattern" name="pattern" required>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Patron</label>
+                        <input type="text" name="pattern" id="editPattern" required class="w-full rounded-lg border-slate-300">
                     </div>
-                    <div class="mb-3">
-                        <label for="editDescription" class="form-label">Description</label>
-                        <input type="text" class="form-control" id="editDescription" name="description">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Descripcion</label>
+                        <input type="text" name="description" id="editDescription" class="w-full rounded-lg border-slate-300">
                     </div>
-                    <div class="mb-3">
-                        <label for="editPriority" class="form-label">Priority</label>
-                        <input type="number" class="form-control" id="editPriority" name="priority" min="1" max="9999">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Prioridad</label>
+                        <input type="number" name="priority" id="editPriority" min="1" max="9999" class="w-full rounded-lg border-slate-300">
                     </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="editActive" name="active" value="1">
-                        <label class="form-check-label" for="editActive">Active</label>
-                    </div>
+                    <label class="flex items-center">
+                        <input type="hidden" name="active" value="0">
+                        <input type="checkbox" name="active" id="editActive" value="1" class="rounded border-slate-300 text-blue-600">
+                        <span class="ml-2 text-sm text-slate-600">Regla activa</span>
+                    </label>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="document.getElementById('editRuleModal').classList.add('hidden')" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
-</div>
 
-<!-- Import Modal -->
-<div class="modal fade" id="importModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <!-- Import Modal -->
+    <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Importar Reglas</h3>
             <form action="{{ route('dialing-plans.rules.import', $dialingPlan) }}" method="POST">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Import Rules</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="importType" class="form-label">Rule Type</label>
-                        <select class="form-select" id="importType" name="type" required>
-                            <option value="allow">Allow</option>
-                            <option value="deny">Deny</option>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tipo de Reglas</label>
+                        <select name="type" class="w-full rounded-lg border-slate-300">
+                            <option value="allow">ALLOW - Permitir</option>
+                            <option value="deny">DENY - Bloquear</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="patterns" class="form-label">Patterns (one per line)</label>
-                        <textarea class="form-control" id="patterns" name="patterns" rows="10"
-                                  placeholder="34*&#10;33*&#10;44*"></textarea>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Patrones (uno por linea)</label>
+                        <textarea name="patterns" rows="8" class="w-full rounded-lg border-slate-300 font-mono text-sm" placeholder="34*&#10;33*&#10;44*"></textarea>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Import</button>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Importar</button>
                 </div>
             </form>
         </div>
     </div>
-</div>
-@endsection
 
-@push('scripts')
-<script>
-function editRule(id, type, pattern, description, priority, active) {
-    document.getElementById('editRuleForm').action = '{{ route("dialing-plans.rules.update", [$dialingPlan, ""]) }}/' + id;
-    document.getElementById('editType').value = type;
-    document.getElementById('editPattern').value = pattern;
-    document.getElementById('editDescription').value = description;
-    document.getElementById('editPriority').value = priority;
-    document.getElementById('editActive').checked = active;
-    new bootstrap.Modal(document.getElementById('editRuleModal')).show();
-}
+    <script>
+    function testNumber() {
+        const number = document.getElementById('testNumber').value.trim();
+        if (!number) return;
 
-document.getElementById('btnTestNumber').addEventListener('click', function() {
-    const number = document.getElementById('testNumber').value.trim();
-    if (!number) return;
+        fetch('{{ route("dialing-plans.test", $dialingPlan) }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ number: number })
+        })
+        .then(r => r.json())
+        .then(data => {
+            const div = document.getElementById('testResult');
+            div.classList.remove('hidden');
+            const color = data.allowed ? 'green' : 'red';
+            const icon = data.allowed ? '✓' : '✗';
+            let html = `<div class="p-3 rounded-lg bg-${color}-50 border border-${color}-200">`;
+            html += `<p class="font-semibold text-${color}-700">${icon} ${data.allowed ? 'PERMITIDO' : 'BLOQUEADO'}</p>`;
+            html += `<p class="text-xs text-${color}-600 mt-1">${data.message}</p>`;
+            if (data.prefix) {
+                html += `<p class="text-xs text-slate-500 mt-2">Prefijo: ${data.prefix.prefix} (${data.prefix.country || 'Desconocido'})`;
+                if (data.prefix.is_premium) html += ' <span class="text-yellow-600">[Premium]</span>';
+                html += '</p>';
+            }
+            html += '</div>';
+            div.innerHTML = html;
+        });
+    }
 
-    fetch('{{ route("dialing-plans.test", $dialingPlan) }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ number: number })
-    })
-    .then(response => response.json())
-    .then(data => {
-        const resultDiv = document.getElementById('testResult');
-        resultDiv.style.display = 'block';
-
-        let html = '';
-        if (data.allowed) {
-            html = '<div class="alert alert-success mb-0">';
-            html += '<i class="fas fa-check-circle me-2"></i><strong>ALLOWED</strong><br>';
-        } else {
-            html = '<div class="alert alert-danger mb-0">';
-            html += '<i class="fas fa-ban me-2"></i><strong>DENIED</strong><br>';
-        }
-
-        html += '<small>' + data.message + '</small>';
-
-        if (data.prefix) {
-            html += '<hr class="my-2">';
-            html += '<small class="text-muted">Prefix: ' + data.prefix.prefix + ' (' + (data.prefix.country || 'Unknown') + ')';
-            if (data.prefix.is_premium) html += ' <span class="badge bg-warning text-dark">Premium</span>';
-            if (data.prefix.is_mobile) html += ' <span class="badge bg-info">Mobile</span>';
-            html += '</small>';
-        }
-
-        html += '</div>';
-        resultDiv.innerHTML = html;
-    });
-});
-</script>
-@endpush
+    function editRule(rule) {
+        document.getElementById('editRuleForm').action = '{{ route("dialing-plans.rules.update", [$dialingPlan, ""]) }}/' + rule.id;
+        document.getElementById('editType').value = rule.type;
+        document.getElementById('editPattern').value = rule.pattern;
+        document.getElementById('editDescription').value = rule.description || '';
+        document.getElementById('editPriority').value = rule.priority;
+        document.getElementById('editActive').checked = rule.active;
+        document.getElementById('editRuleModal').classList.remove('hidden');
+    }
+    </script>
+</x-app-layout>

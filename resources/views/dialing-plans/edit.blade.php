@@ -1,121 +1,106 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center">
+            <a href="{{ route('dialing-plans.show', $dialingPlan) }}" class="text-slate-400 hover:text-slate-600 mr-3 p-1 hover:bg-slate-100 rounded-lg transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Editar: {{ $dialingPlan->name }}</h2>
+                <p class="text-sm text-slate-500 mt-0.5">Modifica la configuracion del plan</p>
+            </div>
+        </div>
+    </x-slot>
 
-@section('title', 'Edit Dialing Plan')
-@section('page-title', 'Edit Dialing Plan: ' . $dialingPlan->name)
-
-@section('content')
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-body">
+    <div class="py-6">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="dark-card p-6">
                 <form action="{{ route('dialing-plans.update', $dialingPlan) }}" method="POST">
                     @csrf
                     @method('PUT')
 
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror"
-                               id="name" name="name" value="{{ old('name', $dialingPlan->name) }}" required>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="mb-6">
+                        <label for="name" class="block text-sm font-medium text-slate-700 mb-1">Nombre *</label>
+                        <input type="text" name="name" id="name" required value="{{ old('name', $dialingPlan->name) }}"
+                            class="w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        @error('name')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror"
-                                  id="description" name="description" rows="2">{{ old('description', $dialingPlan->description) }}</textarea>
-                        @error('description')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="mb-6">
+                        <label for="description" class="block text-sm font-medium text-slate-700 mb-1">Descripcion</label>
+                        <textarea name="description" id="description" rows="2"
+                            class="w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('description', $dialingPlan->description) }}</textarea>
+                        @error('description')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="default_action" class="form-label">Default Action <span class="text-danger">*</span></label>
-                            <select class="form-select @error('default_action') is-invalid @enderror"
-                                    id="default_action" name="default_action" required>
-                                <option value="allow" {{ old('default_action', $dialingPlan->default_action) === 'allow' ? 'selected' : '' }}>
-                                    Allow (permit if no rule matches)
-                                </option>
-                                <option value="deny" {{ old('default_action', $dialingPlan->default_action) === 'deny' ? 'selected' : '' }}>
-                                    Deny (block if no rule matches)
-                                </option>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="default_action" class="block text-sm font-medium text-slate-700 mb-1">Accion por Defecto *</label>
+                            <select name="default_action" id="default_action" required
+                                class="w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="allow" {{ old('default_action', $dialingPlan->default_action) === 'allow' ? 'selected' : '' }}>ALLOW - Permitir si no hay regla</option>
+                                <option value="deny" {{ old('default_action', $dialingPlan->default_action) === 'deny' ? 'selected' : '' }}>DENY - Bloquear si no hay regla</option>
                             </select>
-                            @error('default_action')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label d-block">&nbsp;</label>
-                            <div class="form-check form-switch mt-2">
-                                <input class="form-check-input" type="checkbox" id="block_premium"
-                                       name="block_premium" value="1" {{ old('block_premium', $dialingPlan->block_premium) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="block_premium">
-                                    Block Premium Destinations
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-3">Opciones</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="hidden" name="block_premium" value="0">
+                                    <input type="checkbox" name="block_premium" value="1" {{ old('block_premium', $dialingPlan->block_premium) ? 'checked' : '' }}
+                                        class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-slate-600">Bloquear destinos premium</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="hidden" name="active" value="0">
+                                    <input type="checkbox" name="active" value="1" {{ old('active', $dialingPlan->active) ? 'checked' : '' }}
+                                        class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-slate-600">Plan activo</span>
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="active"
-                                   name="active" value="1" {{ old('active', $dialingPlan->active) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="active">Active</label>
-                        </div>
-                    </div>
-
                     @if($dialingPlan->customers()->exists())
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            This dialing plan is assigned to <strong>{{ $dialingPlan->customers()->count() }}</strong> customer(s).
-                            Changes will affect them immediately.
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                            <div class="flex">
+                                <svg class="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                <p class="text-sm text-yellow-800">Este plan esta asignado a <strong>{{ $dialingPlan->customers()->count() }}</strong> cliente(s). Los cambios se aplicaran inmediatamente.</p>
+                            </div>
                         </div>
                     @endif
 
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ route('dialing-plans.show', $dialingPlan) }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Cancel
-                        </a>
+                    <div class="flex justify-between pt-4 border-t border-slate-200">
                         <div>
                             @if(!$dialingPlan->customers()->exists())
-                                <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                    <i class="fas fa-trash me-1"></i> Delete
+                                <button type="button" onclick="document.getElementById('deleteModal').classList.remove('hidden')" class="btn-danger">
+                                    Eliminar Plan
                                 </button>
                             @endif
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i> Save Changes
-                            </button>
+                        </div>
+                        <div class="flex gap-3">
+                            <a href="{{ route('dialing-plans.show', $dialingPlan) }}" class="btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn-primary">Guardar Cambios</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete Dialing Plan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete <strong>{{ $dialingPlan->name }}</strong>?</p>
-                <p class="text-muted">This will also delete all rules in this plan. This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form action="{{ route('dialing-plans.destroy', $dialingPlan) }}" method="POST" class="d-inline">
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Eliminar Dialing Plan</h3>
+            <p class="text-slate-600 mb-4">¿Seguro que quieres eliminar <strong>{{ $dialingPlan->name }}</strong>? Esta accion no se puede deshacer.</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('deleteModal').classList.add('hidden')" class="btn-secondary">Cancelar</button>
+                <form action="{{ route('dialing-plans.destroy', $dialingPlan) }}" method="POST" class="inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn-danger">Eliminar</button>
                 </form>
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

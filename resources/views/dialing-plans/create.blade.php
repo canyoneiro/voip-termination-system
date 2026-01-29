@@ -1,89 +1,81 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center">
+            <a href="{{ route('dialing-plans.index') }}" class="text-slate-400 hover:text-slate-600 mr-3 p-1 hover:bg-slate-100 rounded-lg transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Nuevo Dialing Plan</h2>
+                <p class="text-sm text-slate-500 mt-0.5">Crea un plan para restringir destinos</p>
+            </div>
+        </div>
+    </x-slot>
 
-@section('title', 'Create Dialing Plan')
-@section('page-title', 'Create Dialing Plan')
-
-@section('content')
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-body">
+    <div class="py-6">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="dark-card p-6">
                 <form action="{{ route('dialing-plans.store') }}" method="POST">
                     @csrf
 
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror"
-                               id="name" name="name" value="{{ old('name') }}" required>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <div class="form-text">A descriptive name for this dialing plan (e.g., "National Only", "No Premium")</div>
+                    <div class="mb-6">
+                        <label for="name" class="block text-sm font-medium text-slate-700 mb-1">Nombre *</label>
+                        <input type="text" name="name" id="name" required value="{{ old('name') }}"
+                            class="w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="Ej: Solo Nacional, Sin Premium...">
+                        @error('name')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror"
-                                  id="description" name="description" rows="2">{{ old('description') }}</textarea>
-                        @error('description')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="mb-6">
+                        <label for="description" class="block text-sm font-medium text-slate-700 mb-1">Descripcion</label>
+                        <textarea name="description" id="description" rows="2"
+                            class="w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="Describe que hace este plan...">{{ old('description') }}</textarea>
+                        @error('description')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="default_action" class="form-label">Default Action <span class="text-danger">*</span></label>
-                            <select class="form-select @error('default_action') is-invalid @enderror"
-                                    id="default_action" name="default_action" required>
-                                <option value="allow" {{ old('default_action', 'allow') === 'allow' ? 'selected' : '' }}>
-                                    Allow (permit if no rule matches)
-                                </option>
-                                <option value="deny" {{ old('default_action') === 'deny' ? 'selected' : '' }}>
-                                    Deny (block if no rule matches)
-                                </option>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="default_action" class="block text-sm font-medium text-slate-700 mb-1">Accion por Defecto *</label>
+                            <select name="default_action" id="default_action" required
+                                class="w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="allow" {{ old('default_action', 'allow') === 'allow' ? 'selected' : '' }}>ALLOW - Permitir si no hay regla</option>
+                                <option value="deny" {{ old('default_action') === 'deny' ? 'selected' : '' }}>DENY - Bloquear si no hay regla</option>
                             </select>
-                            @error('default_action')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">What happens when no rule matches the dialed number</div>
+                            <p class="mt-1 text-xs text-slate-500">Que hacer cuando ningun patron coincide</p>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label d-block">&nbsp;</label>
-                            <div class="form-check form-switch mt-2">
-                                <input class="form-check-input" type="checkbox" id="block_premium"
-                                       name="block_premium" value="1" {{ old('block_premium', true) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="block_premium">
-                                    Block Premium Destinations
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-3">Opciones</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="hidden" name="block_premium" value="0">
+                                    <input type="checkbox" name="block_premium" value="1" {{ old('block_premium', true) ? 'checked' : '' }}
+                                        class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-slate-600">Bloquear destinos premium</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="hidden" name="active" value="0">
+                                    <input type="checkbox" name="active" value="1" {{ old('active', true) ? 'checked' : '' }}
+                                        class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-slate-600">Plan activo</span>
                                 </label>
                             </div>
-                            <div class="form-text">Automatically block destinations marked as premium</div>
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="active"
-                                   name="active" value="1" {{ old('active', true) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="active">Active</label>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <div class="flex">
+                            <svg class="w-5 h-5 text-blue-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <p class="text-sm text-blue-800">Despues de crear el plan, podras añadir reglas ALLOW/DENY para controlar destinos especificos.</p>
                         </div>
                     </div>
 
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Next Step:</strong> After creating the dialing plan, you'll be able to add allow/deny rules.
-                    </div>
-
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ route('dialing-plans.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Cancel
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i> Create Dialing Plan
-                        </button>
+                    <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                        <a href="{{ route('dialing-plans.index') }}" class="btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn-primary">Crear Plan</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>
