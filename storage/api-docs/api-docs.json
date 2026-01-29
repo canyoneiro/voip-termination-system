@@ -1,0 +1,577 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "VoIP Termination System API",
+    "version": "1.0.0",
+    "description": "API REST para el sistema de terminacion VoIP. Gestiona clientes, carriers, CDRs, tarifas, reportes, fraude y mas.",
+    "contact": {
+      "email": "admin@tellmetelecom.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://sw1.tellmetelecom.com/api/v1",
+      "description": "Production Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Token"
+      }
+    },
+    "schemas": {
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "uuid": {"type": "string", "format": "uuid"},
+          "name": {"type": "string"},
+          "company": {"type": "string"},
+          "email": {"type": "string", "format": "email"},
+          "phone": {"type": "string"},
+          "max_channels": {"type": "integer", "default": 10},
+          "max_cps": {"type": "integer", "default": 5},
+          "max_daily_minutes": {"type": "integer", "nullable": true},
+          "max_monthly_minutes": {"type": "integer", "nullable": true},
+          "used_daily_minutes": {"type": "integer"},
+          "used_monthly_minutes": {"type": "integer"},
+          "active": {"type": "boolean"},
+          "created_at": {"type": "string", "format": "date-time"},
+          "updated_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "Carrier": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "uuid": {"type": "string", "format": "uuid"},
+          "name": {"type": "string"},
+          "host": {"type": "string"},
+          "port": {"type": "integer", "default": 5060},
+          "transport": {"type": "string", "enum": ["udp", "tcp", "tls"]},
+          "codecs": {"type": "string"},
+          "priority": {"type": "integer"},
+          "weight": {"type": "integer"},
+          "tech_prefix": {"type": "string"},
+          "strip_digits": {"type": "integer"},
+          "max_cps": {"type": "integer"},
+          "max_channels": {"type": "integer"},
+          "state": {"type": "string", "enum": ["active", "inactive", "probing", "disabled"]}
+        }
+      },
+      "CDR": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "uuid": {"type": "string", "format": "uuid"},
+          "call_id": {"type": "string"},
+          "customer_id": {"type": "integer"},
+          "carrier_id": {"type": "integer"},
+          "source_ip": {"type": "string"},
+          "caller": {"type": "string"},
+          "callee": {"type": "string"},
+          "start_time": {"type": "string", "format": "date-time"},
+          "answer_time": {"type": "string", "format": "date-time"},
+          "end_time": {"type": "string", "format": "date-time"},
+          "duration": {"type": "integer"},
+          "billable_duration": {"type": "integer"},
+          "pdd": {"type": "integer"},
+          "sip_code": {"type": "integer"},
+          "sip_reason": {"type": "string"}
+        }
+      },
+      "Alert": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "type": {"type": "string"},
+          "severity": {"type": "string", "enum": ["info", "warning", "critical"]},
+          "title": {"type": "string"},
+          "message": {"type": "string"},
+          "acknowledged": {"type": "boolean"},
+          "created_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean", "example": true},
+          "data": {"type": "object"}
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean", "example": false},
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {"type": "string"},
+              "message": {"type": "string"}
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Estado del sistema",
+        "tags": ["Health"],
+        "responses": {
+          "200": {"description": "Sistema saludable"},
+          "503": {"description": "Sistema con problemas"}
+        }
+      }
+    },
+    "/ping": {
+      "get": {
+        "summary": "Uptime check",
+        "tags": ["Health"],
+        "responses": {
+          "200": {"description": "pong"}
+        }
+      }
+    },
+    "/customers": {
+      "get": {
+        "summary": "Listar clientes",
+        "tags": ["Customers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "active", "in": "query", "schema": {"type": "boolean"}},
+          {"name": "search", "in": "query", "schema": {"type": "string"}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer", "default": 50}}
+        ],
+        "responses": {
+          "200": {"description": "Lista de clientes"}
+        }
+      },
+      "post": {
+        "summary": "Crear cliente",
+        "tags": ["Customers"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {"type": "string"},
+                  "company": {"type": "string"},
+                  "email": {"type": "string"},
+                  "max_channels": {"type": "integer"},
+                  "max_cps": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Cliente creado"},
+          "422": {"description": "Error de validacion"}
+        }
+      }
+    },
+    "/customers/{id}": {
+      "get": {
+        "summary": "Obtener cliente",
+        "tags": ["Customers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {
+          "200": {"description": "Detalle del cliente"},
+          "404": {"description": "No encontrado"}
+        }
+      },
+      "put": {
+        "summary": "Actualizar cliente",
+        "tags": ["Customers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Customer"}}}},
+        "responses": {"200": {"description": "Cliente actualizado"}}
+      },
+      "delete": {
+        "summary": "Eliminar cliente",
+        "tags": ["Customers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "Eliminado"}, "409": {"description": "Tiene llamadas activas"}}
+      }
+    },
+    "/customers/{id}/ips": {
+      "get": {
+        "summary": "IPs autorizadas del cliente",
+        "tags": ["Customers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "Lista de IPs"}}
+      },
+      "post": {
+        "summary": "Agregar IP al cliente",
+        "tags": ["Customers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "required": ["ip_address"], "properties": {"ip_address": {"type": "string"}, "description": {"type": "string"}}}}}},
+        "responses": {"201": {"description": "IP agregada"}}
+      }
+    },
+    "/customers/{id}/usage": {
+      "get": {
+        "summary": "Consumo actual del cliente",
+        "tags": ["Customers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "Datos de consumo"}}
+      }
+    },
+    "/customers/{id}/active-calls": {
+      "get": {
+        "summary": "Llamadas activas del cliente",
+        "tags": ["Customers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "Lista de llamadas"}}
+      }
+    },
+    "/carriers": {
+      "get": {
+        "summary": "Listar carriers",
+        "tags": ["Carriers"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Lista de carriers"}}
+      },
+      "post": {
+        "summary": "Crear carrier",
+        "tags": ["Carriers"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Carrier"}}}},
+        "responses": {"201": {"description": "Carrier creado"}}
+      }
+    },
+    "/carriers/{id}": {
+      "get": {
+        "summary": "Obtener carrier",
+        "tags": ["Carriers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "Detalle del carrier"}}
+      },
+      "put": {
+        "summary": "Actualizar carrier",
+        "tags": ["Carriers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "Carrier actualizado"}}
+      },
+      "delete": {
+        "summary": "Eliminar carrier",
+        "tags": ["Carriers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "Eliminado"}}
+      }
+    },
+    "/carriers/{id}/status": {
+      "get": {
+        "summary": "Estado del carrier",
+        "tags": ["Carriers"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "Estado y latencia"}}
+      }
+    },
+    "/cdrs": {
+      "get": {
+        "summary": "Listar CDRs",
+        "tags": ["CDRs"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "customer_id", "in": "query", "schema": {"type": "integer"}},
+          {"name": "carrier_id", "in": "query", "schema": {"type": "integer"}},
+          {"name": "caller", "in": "query", "schema": {"type": "string"}},
+          {"name": "callee", "in": "query", "schema": {"type": "string"}},
+          {"name": "from", "in": "query", "schema": {"type": "string", "format": "date"}},
+          {"name": "to", "in": "query", "schema": {"type": "string", "format": "date"}},
+          {"name": "min_duration", "in": "query", "schema": {"type": "integer"}},
+          {"name": "sip_code", "in": "query", "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "Lista de CDRs"}}
+      }
+    },
+    "/cdrs/export": {
+      "get": {
+        "summary": "Exportar CDRs a CSV",
+        "tags": ["CDRs"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Archivo CSV"}}
+      }
+    },
+    "/cdrs/{uuid}": {
+      "get": {
+        "summary": "Detalle de CDR",
+        "tags": ["CDRs"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "uuid", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Detalle del CDR"}}
+      }
+    },
+    "/active-calls": {
+      "get": {
+        "summary": "Listar llamadas activas",
+        "tags": ["Active Calls"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "customer_id", "in": "query", "schema": {"type": "integer"}},
+          {"name": "carrier_id", "in": "query", "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "Lista de llamadas activas"}}
+      }
+    },
+    "/active-calls/count": {
+      "get": {
+        "summary": "Conteo de llamadas activas",
+        "tags": ["Active Calls"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Conteo por customer/carrier"}}
+      }
+    },
+    "/stats/realtime": {
+      "get": {
+        "summary": "Metricas en tiempo real",
+        "tags": ["Stats"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Metricas actuales"}}
+      }
+    },
+    "/stats/summary": {
+      "get": {
+        "summary": "Resumen de estadisticas",
+        "tags": ["Stats"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "from", "in": "query", "schema": {"type": "string", "format": "date"}},
+          {"name": "to", "in": "query", "schema": {"type": "string", "format": "date"}}
+        ],
+        "responses": {"200": {"description": "Resumen del periodo"}}
+      }
+    },
+    "/stats/daily": {
+      "get": {
+        "summary": "Estadisticas diarias",
+        "tags": ["Stats"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Stats por dia"}}
+      }
+    },
+    "/stats/by-customer": {
+      "get": {
+        "summary": "Stats por cliente",
+        "tags": ["Stats"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Resumen por cliente"}}
+      }
+    },
+    "/stats/by-carrier": {
+      "get": {
+        "summary": "Stats por carrier",
+        "tags": ["Stats"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Resumen por carrier"}}
+      }
+    },
+    "/alerts": {
+      "get": {
+        "summary": "Listar alertas",
+        "tags": ["Alerts"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "type", "in": "query", "schema": {"type": "string"}},
+          {"name": "severity", "in": "query", "schema": {"type": "string"}},
+          {"name": "acknowledged", "in": "query", "schema": {"type": "boolean"}}
+        ],
+        "responses": {"200": {"description": "Lista de alertas"}}
+      }
+    },
+    "/alerts/{id}/acknowledge": {
+      "patch": {
+        "summary": "Reconocer alerta",
+        "tags": ["Alerts"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "Alerta reconocida"}}
+      }
+    },
+    "/qos/realtime": {
+      "get": {
+        "summary": "Metricas QoS en tiempo real",
+        "tags": ["QoS"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "MOS, PDD, etc"}}
+      }
+    },
+    "/qos/daily-stats": {
+      "get": {
+        "summary": "Estadisticas QoS diarias",
+        "tags": ["QoS"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Stats QoS por dia"}}
+      }
+    },
+    "/rates/lcr-lookup": {
+      "get": {
+        "summary": "Consulta LCR",
+        "tags": ["Rates"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "number", "in": "query", "required": true, "schema": {"type": "string"}},
+          {"name": "customer_id", "in": "query", "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "Mejor carrier para el destino"}}
+      }
+    },
+    "/rates/destinations": {
+      "get": {
+        "summary": "Listar destinos",
+        "tags": ["Rates"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Lista de prefijos"}}
+      }
+    },
+    "/rates/carrier-rates": {
+      "get": {
+        "summary": "Listar tarifas de carrier",
+        "tags": ["Rates"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Lista de tarifas"}}
+      }
+    },
+    "/reports": {
+      "get": {
+        "summary": "Listar reportes programados",
+        "tags": ["Reports"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Lista de reportes"}}
+      },
+      "post": {
+        "summary": "Crear reporte programado",
+        "tags": ["Reports"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"201": {"description": "Reporte creado"}}
+      }
+    },
+    "/fraud/rules": {
+      "get": {
+        "summary": "Listar reglas de fraude",
+        "tags": ["Fraud"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Lista de reglas"}}
+      }
+    },
+    "/fraud/incidents": {
+      "get": {
+        "summary": "Listar incidentes de fraude",
+        "tags": ["Fraud"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Lista de incidentes"}}
+      }
+    },
+    "/webhooks": {
+      "get": {
+        "summary": "Listar webhooks",
+        "tags": ["Webhooks"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Lista de webhooks"}}
+      },
+      "post": {
+        "summary": "Crear webhook",
+        "tags": ["Webhooks"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["url", "events"],
+                "properties": {
+                  "url": {"type": "string"},
+                  "secret": {"type": "string"},
+                  "events": {"type": "array", "items": {"type": "string"}}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"201": {"description": "Webhook creado"}}
+      }
+    },
+    "/system/status": {
+      "get": {
+        "summary": "Estado del sistema",
+        "tags": ["System"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Informacion del sistema"}}
+      }
+    },
+    "/system/kamailio/reload": {
+      "post": {
+        "summary": "Recargar Kamailio",
+        "tags": ["System"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Kamailio recargado"}}
+      }
+    },
+    "/blacklist": {
+      "get": {
+        "summary": "Listar IPs bloqueadas",
+        "tags": ["System"],
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Lista de IPs"}}
+      },
+      "post": {
+        "summary": "Agregar IP a blacklist",
+        "tags": ["System"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["ip_address", "reason"],
+                "properties": {
+                  "ip_address": {"type": "string"},
+                  "reason": {"type": "string"},
+                  "permanent": {"type": "boolean"},
+                  "duration": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"201": {"description": "IP bloqueada"}}
+      }
+    }
+  },
+  "tags": [
+    {"name": "Health", "description": "Endpoints de estado"},
+    {"name": "Customers", "description": "Gestion de clientes"},
+    {"name": "Carriers", "description": "Gestion de carriers"},
+    {"name": "CDRs", "description": "Registros de llamadas"},
+    {"name": "Active Calls", "description": "Llamadas en curso"},
+    {"name": "Stats", "description": "Estadisticas"},
+    {"name": "Alerts", "description": "Sistema de alertas"},
+    {"name": "QoS", "description": "Calidad de servicio"},
+    {"name": "Rates", "description": "Tarifas y LCR"},
+    {"name": "Reports", "description": "Reportes programados"},
+    {"name": "Fraud", "description": "Deteccion de fraude"},
+    {"name": "Webhooks", "description": "Notificaciones webhook"},
+    {"name": "System", "description": "Configuracion del sistema"}
+  ]
+}

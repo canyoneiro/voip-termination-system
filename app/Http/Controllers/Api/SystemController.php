@@ -11,9 +11,24 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Process;
+use OpenApi\Annotations as OA;
 
 class SystemController extends BaseApiController
 {
+    /**
+     * @OA\Get(
+     *     path="/health",
+     *     summary="Estado del sistema",
+     *     description="Verifica el estado de todos los servicios",
+     *     tags={"Health"},
+     *     @OA\Response(response=200, description="Sistema saludable", @OA\JsonContent(
+     *         @OA\Property(property="status", type="string", example="healthy"),
+     *         @OA\Property(property="checks", type="object"),
+     *         @OA\Property(property="timestamp", type="string", format="date-time")
+     *     )),
+     *     @OA\Response(response=503, description="Sistema con problemas")
+     * )
+     */
     public function health(): JsonResponse
     {
         $status = [
@@ -33,6 +48,15 @@ class SystemController extends BaseApiController
         ], $overall ? 200 : 503);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/system/status",
+     *     summary="Estado completo del sistema",
+     *     tags={"System"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Estado del sistema")
+     * )
+     */
     public function status(): JsonResponse
     {
         return $this->success([
@@ -56,12 +80,37 @@ class SystemController extends BaseApiController
         return $this->success($settings);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/blacklist",
+     *     summary="Listar IPs bloqueadas",
+     *     tags={"System"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Lista de IPs")
+     * )
+     */
     public function blacklist(): JsonResponse
     {
         $ips = IpBlacklist::active()->orderByDesc('created_at')->get();
         return $this->success($ips);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/blacklist",
+     *     summary="Agregar IP a blacklist",
+     *     tags={"System"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"ip_address", "reason"},
+     *         @OA\Property(property="ip_address", type="string", example="192.168.1.100"),
+     *         @OA\Property(property="reason", type="string", example="Flood attack"),
+     *         @OA\Property(property="permanent", type="boolean", default=false),
+     *         @OA\Property(property="duration", type="integer", description="Segundos", example=3600)
+     *     )),
+     *     @OA\Response(response=201, description="IP bloqueada")
+     * )
+     */
     public function addToBlacklist(Request $request): JsonResponse
     {
         $validated = $request->validate([

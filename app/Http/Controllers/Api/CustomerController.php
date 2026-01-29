@@ -8,9 +8,25 @@ use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Redis;
+use OpenApi\Annotations as OA;
 
 class CustomerController extends BaseApiController
 {
+    /**
+     * @OA\Get(
+     *     path="/customers",
+     *     summary="Listar clientes",
+     *     description="Obtiene una lista paginada de clientes",
+     *     tags={"Customers"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="active", in="query", description="Filtrar por estado activo", @OA\Schema(type="boolean")),
+     *     @OA\Parameter(name="search", in="query", description="Buscar por nombre, empresa o email", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="per_page", in="query", description="Resultados por pagina (max 100)", @OA\Schema(type="integer", default=50)),
+     *     @OA\Parameter(name="page", in="query", description="Numero de pagina", @OA\Schema(type="integer", default=1)),
+     *     @OA\Response(response=200, description="Lista de clientes", @OA\JsonContent(ref="#/components/schemas/SuccessResponse")),
+     *     @OA\Response(response=401, description="No autorizado")
+     * )
+     */
     public function index(Request $request): JsonResponse
     {
         $query = Customer::with('ips');
@@ -34,6 +50,18 @@ class CustomerController extends BaseApiController
         return $this->paginated($customers);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/customers/{id}",
+     *     summary="Obtener cliente",
+     *     description="Obtiene los detalles de un cliente especifico",
+     *     tags={"Customers"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID del cliente", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Detalle del cliente"),
+     *     @OA\Response(response=404, description="Cliente no encontrado")
+     * )
+     */
     public function show(int $id): JsonResponse
     {
         $customer = Customer::with('ips')->find($id);
@@ -49,6 +77,28 @@ class CustomerController extends BaseApiController
         return $this->success($customer);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/customers",
+     *     summary="Crear cliente",
+     *     description="Crea un nuevo cliente",
+     *     tags={"Customers"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"name"},
+     *         @OA\Property(property="name", type="string", example="Nuevo Cliente"),
+     *         @OA\Property(property="company", type="string"),
+     *         @OA\Property(property="email", type="string", format="email"),
+     *         @OA\Property(property="phone", type="string"),
+     *         @OA\Property(property="max_channels", type="integer", default=10),
+     *         @OA\Property(property="max_cps", type="integer", default=5),
+     *         @OA\Property(property="max_daily_minutes", type="integer"),
+     *         @OA\Property(property="max_monthly_minutes", type="integer")
+     *     )),
+     *     @OA\Response(response=201, description="Cliente creado"),
+     *     @OA\Response(response=422, description="Error de validacion")
+     * )
+     */
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -72,6 +122,18 @@ class CustomerController extends BaseApiController
         return $this->success($customer, [], 201);
     }
 
+    /**
+     * @OA\Put(
+     *     path="/customers/{id}",
+     *     summary="Actualizar cliente",
+     *     tags={"Customers"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/Customer")),
+     *     @OA\Response(response=200, description="Cliente actualizado"),
+     *     @OA\Response(response=404, description="No encontrado")
+     * )
+     */
     public function update(Request $request, int $id): JsonResponse
     {
         $customer = Customer::find($id);
@@ -128,6 +190,18 @@ class CustomerController extends BaseApiController
         return $this->success(['active' => $customer->active]);
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/customers/{id}",
+     *     summary="Eliminar cliente",
+     *     tags={"Customers"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Cliente eliminado"),
+     *     @OA\Response(response=404, description="No encontrado"),
+     *     @OA\Response(response=409, description="Tiene llamadas activas")
+     * )
+     */
     public function destroy(int $id): JsonResponse
     {
         $customer = Customer::find($id);
