@@ -30,17 +30,21 @@ return new class extends Migration
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
         });
 
-        // Add portal_enabled to customers for quick check
-        Schema::table('customers', function (Blueprint $table) {
-            $table->boolean('portal_enabled')->default(false)->after('active');
-        });
+        // Add portal_enabled to customers for quick check (if not exists)
+        if (!Schema::hasColumn('customers', 'portal_enabled')) {
+            Schema::table('customers', function (Blueprint $table) {
+                $table->boolean('portal_enabled')->default(false);
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('customers', function (Blueprint $table) {
-            $table->dropColumn('portal_enabled');
-        });
+        if (Schema::hasColumn('customers', 'portal_enabled')) {
+            Schema::table('customers', function (Blueprint $table) {
+                $table->dropColumn('portal_enabled');
+            });
+        }
         Schema::dropIfExists('customer_portal_settings');
     }
 };

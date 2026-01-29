@@ -35,19 +35,23 @@ return new class extends Migration
             $table->index('pattern');
         });
 
-        // Add dialing_plan_id to customers
-        Schema::table('customers', function (Blueprint $table) {
-            $table->foreignId('dialing_plan_id')->nullable()->after('rate_plan_id')
-                ->constrained()->onDelete('set null');
-        });
+        // Add dialing_plan_id to customers (if not exists)
+        if (!Schema::hasColumn('customers', 'dialing_plan_id')) {
+            Schema::table('customers', function (Blueprint $table) {
+                $table->unsignedBigInteger('dialing_plan_id')->nullable();
+                $table->foreign('dialing_plan_id')->references('id')->on('dialing_plans')->onDelete('set null');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('customers', function (Blueprint $table) {
-            $table->dropForeign(['dialing_plan_id']);
-            $table->dropColumn('dialing_plan_id');
-        });
+        if (Schema::hasColumn('customers', 'dialing_plan_id')) {
+            Schema::table('customers', function (Blueprint $table) {
+                $table->dropForeign(['dialing_plan_id']);
+                $table->dropColumn('dialing_plan_id');
+            });
+        }
 
         Schema::dropIfExists('dialing_plan_rules');
         Schema::dropIfExists('dialing_plans');

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ApiTokenAuth;
 use App\Http\Middleware\CustomerTenantScope;
 use App\Http\Middleware\EnsureCustomerPortalEnabled;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
+            'api.token' => ApiTokenAuth::class,
             'portal.enabled' => EnsureCustomerPortalEnabled::class,
             'portal.tenant' => CustomerTenantScope::class,
         ]);

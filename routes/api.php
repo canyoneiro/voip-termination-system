@@ -26,8 +26,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/ping', fn() => response()->json(['pong' => true]));
 });
 
-// Protected API endpoints (TODO: Add proper authentication middleware)
-Route::prefix('v1')->group(function () {
+// Protected API endpoints
+Route::prefix('v1')->middleware('api.token')->group(function () {
 
     // Customers
     Route::prefix('customers')->group(function () {

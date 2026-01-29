@@ -93,13 +93,19 @@ class StatsController extends BaseApiController
     {
         $date = $request->input('date', now()->toDateString());
 
+        // Use database-agnostic hour extraction
+        $driver = DB::getDriverName();
+        $hourExpr = $driver === 'sqlite'
+            ? "cast(strftime('%H', start_time) as integer)"
+            : 'HOUR(start_time)';
+
         $stats = Cdr::whereDate('start_time', $date)
-            ->selectRaw('
-                HOUR(start_time) as hour,
+            ->selectRaw("
+                {$hourExpr} as hour,
                 COUNT(*) as total_calls,
                 SUM(CASE WHEN sip_code = 200 THEN 1 ELSE 0 END) as answered_calls,
                 SUM(duration) as total_duration
-            ')
+            ")
             ->groupBy('hour')
             ->orderBy('hour')
             ->get();
@@ -167,9 +173,10 @@ class StatsController extends BaseApiController
         $to = $request->input('to', now()->toDateTimeString());
         $limit = min($request->input('limit', 20), 100);
 
+        // Use substr() which works in both MySQL and SQLite
         $stats = Cdr::whereBetween('start_time', [$from, $to])
             ->selectRaw('
-                LEFT(callee, 4) as prefix,
+                substr(callee, 1, 4) as prefix,
                 COUNT(*) as total_calls,
                 SUM(CASE WHEN sip_code = 200 THEN 1 ELSE 0 END) as answered_calls,
                 SUM(duration) as total_duration

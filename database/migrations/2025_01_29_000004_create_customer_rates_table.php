@@ -28,19 +28,23 @@ return new class extends Migration
             $table->index(['customer_id', 'active']);
         });
 
-        // Add rate_plan_id to customers table
-        Schema::table('customers', function (Blueprint $table) {
-            $table->unsignedBigInteger('rate_plan_id')->nullable()->after('notify_channels_warning');
-            $table->foreign('rate_plan_id')->references('id')->on('rate_plans')->onDelete('set null');
-        });
+        // Add rate_plan_id to customers table (if not exists)
+        if (!Schema::hasColumn('customers', 'rate_plan_id')) {
+            Schema::table('customers', function (Blueprint $table) {
+                $table->unsignedBigInteger('rate_plan_id')->nullable();
+                $table->foreign('rate_plan_id')->references('id')->on('rate_plans')->onDelete('set null');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('customers', function (Blueprint $table) {
-            $table->dropForeign(['rate_plan_id']);
-            $table->dropColumn('rate_plan_id');
-        });
+        if (Schema::hasColumn('customers', 'rate_plan_id')) {
+            Schema::table('customers', function (Blueprint $table) {
+                $table->dropForeign(['rate_plan_id']);
+                $table->dropColumn('rate_plan_id');
+            });
+        }
         Schema::dropIfExists('customer_rates');
     }
 };

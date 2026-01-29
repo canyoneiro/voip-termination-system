@@ -43,6 +43,7 @@ class IpBlacklist extends Model
     {
         return $query->where(function ($q) {
             $q->where('permanent', true)
+              ->orWhereNull('expires_at')
               ->orWhere('expires_at', '>', now());
         });
     }

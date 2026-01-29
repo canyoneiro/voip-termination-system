@@ -20,11 +20,11 @@ class CdrObserver
     public function created(Cdr $cdr): void
     {
         // Dispatch billing calculation job
-        ProcessCdrBillingJob::dispatch($cdr);
+        ProcessCdrBillingJob::dispatch($cdr->id);
 
         // Dispatch QoS metrics processing job (only for answered calls)
         if ($cdr->sip_code === 200 && $cdr->duration > 0) {
-            ProcessQosMetricsJob::dispatch($cdr);
+            ProcessQosMetricsJob::dispatch($cdr->id);
         }
 
         // Perform real-time fraud checks
@@ -56,12 +56,12 @@ class CdrObserver
         // If the CDR was updated with final data (e.g., from BYE processing)
         // and billing wasn't calculated yet, dispatch the billing job
         if ($cdr->wasChanged(['duration', 'billable_duration', 'sip_code']) && !$cdr->cost) {
-            ProcessCdrBillingJob::dispatch($cdr);
+            ProcessCdrBillingJob::dispatch($cdr->id);
         }
 
         // If the call was just answered, process QoS
         if ($cdr->wasChanged('sip_code') && $cdr->sip_code === 200 && $cdr->duration > 0) {
-            ProcessQosMetricsJob::dispatch($cdr);
+            ProcessQosMetricsJob::dispatch($cdr->id);
         }
     }
 }

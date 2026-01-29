@@ -26,67 +26,85 @@ class LcrServiceTest extends TestCase
     {
         DestinationPrefix::create([
             'prefix' => '34',
-            'country' => 'Spain',
-            'description' => 'Spain Fixed',
+            'country_code' => 'ES',
+            'country_name' => 'Spain',
+            'region' => 'Fixed',
+            'active' => true,
         ]);
 
         DestinationPrefix::create([
             'prefix' => '346',
-            'country' => 'Spain',
-            'description' => 'Spain Mobile',
+            'country_code' => 'ES',
+            'country_name' => 'Spain',
+            'region' => 'Mobile',
             'is_mobile' => true,
+            'active' => true,
         ]);
 
         // Should match longest prefix
-        $destination = $this->lcrService->findDestination('34612345678');
+        $destination = $this->lcrService->findDestinationPrefix('34612345678');
+        $this->assertNotNull($destination);
         $this->assertEquals('346', $destination->prefix);
 
-        // Should match shorter prefix
-        $destination = $this->lcrService->findDestination('34912345678');
+        // Should match shorter prefix for fixed line
+        $destination = $this->lcrService->findDestinationPrefix('34912345678');
+        $this->assertNotNull($destination);
         $this->assertEquals('34', $destination->prefix);
     }
 
-    public function test_select_carrier_by_priority(): void
+    public function test_select_carrier_by_cost(): void
     {
+        $customer = Customer::factory()->create(['active' => true]);
+
         $carrier1 = Carrier::factory()->create([
-            'name' => 'High Priority',
+            'name' => 'Expensive',
             'priority' => 1,
             'state' => 'active',
         ]);
 
         $carrier2 = Carrier::factory()->create([
-            'name' => 'Low Priority',
-            'priority' => 10,
+            'name' => 'Cheap',
+            'priority' => 1,
             'state' => 'active',
         ]);
 
-        DestinationPrefix::create(['prefix' => '34', 'country' => 'Spain']);
+        $prefix = DestinationPrefix::create([
+            'prefix' => '34',
+            'country_code' => 'ES',
+            'country_name' => 'Spain',
+            'active' => true,
+        ]);
 
         CarrierRate::create([
             'carrier_id' => $carrier1->id,
-            'prefix' => '34',
-            'rate_per_minute' => 0.01,
+            'destination_prefix_id' => $prefix->id,
+            'cost_per_minute' => 0.02,
             'billing_increment' => 1,
+            'effective_date' => now()->subDay(),
             'active' => true,
         ]);
 
         CarrierRate::create([
             'carrier_id' => $carrier2->id,
-            'prefix' => '34',
-            'rate_per_minute' => 0.005,
+            'destination_prefix_id' => $prefix->id,
+            'cost_per_minute' => 0.01,
             'billing_increment' => 1,
+            'effective_date' => now()->subDay(),
             'active' => true,
         ]);
 
-        $result = $this->lcrService->selectCarrier('34612345678');
+        $result = $this->lcrService->selectCarrier('34612345678', $customer);
 
-        // Should select carrier with highest priority (lowest number)
+        // Should select carrier with lowest cost
         $this->assertNotNull($result);
-        $this->assertEquals('High Priority', $result['carrier']->name);
+        $this->assertFalse($result['error'] ?? false);
+        $this->assertEquals('Cheap', $result['carrier']->name);
     }
 
     public function test_select_carrier_excludes_inactive(): void
     {
+        $customer = Customer::factory()->create(['active' => true]);
+
         $activeCarrier = Carrier::factory()->create([
             'name' => 'Active Carrier',
             'state' => 'active',
@@ -97,61 +115,76 @@ class LcrServiceTest extends TestCase
             'state' => 'inactive',
         ]);
 
-        DestinationPrefix::create(['prefix' => '34', 'country' => 'Spain']);
+        $prefix = DestinationPrefix::create([
+            'prefix' => '34',
+            'country_code' => 'ES',
+            'country_name' => 'Spain',
+            'active' => true,
+        ]);
 
         CarrierRate::create([
             'carrier_id' => $activeCarrier->id,
-            'prefix' => '34',
-            'rate_per_minute' => 0.02,
+            'destination_prefix_id' => $prefix->id,
+            'cost_per_minute' => 0.02,
             'billing_increment' => 1,
+            'effective_date' => now()->subDay(),
             'active' => true,
         ]);
 
         CarrierRate::create([
             'carrier_id' => $inactiveCarrier->id,
-            'prefix' => '34',
-            'rate_per_minute' => 0.01,
+            'destination_prefix_id' => $prefix->id,
+            'cost_per_minute' => 0.01,
             'billing_increment' => 1,
+            'effective_date' => now()->subDay(),
             'active' => true,
         ]);
 
-        $result = $this->lcrService->selectCarrier('34612345678');
+        $result = $this->lcrService->selectCarrier('34612345678', $customer);
 
         $this->assertNotNull($result);
+        $this->assertFalse($result['error'] ?? false);
         $this->assertEquals('Active Carrier', $result['carrier']->name);
     }
 
     public function test_returns_null_for_no_routes(): void
     {
-        $result = $this->lcrService->selectCarrier('99912345678');
+        $customer = Customer::factory()->create(['active' => true]);
+        $result = $this->lcrService->selectCarrier('99912345678', $customer);
         $this->assertNull($result);
     }
 
-    public function test_carrier_prefix_filter(): void
+    public function test_lcr_lookup_returns_carrier_info(): void
     {
         $carrier = Carrier::factory()->create([
-            'name' => 'Spain Only',
+            'name' => 'Test Carrier',
             'state' => 'active',
-            'prefix_filter' => '34*,351*', // Only Spain and Portugal
         ]);
 
-        DestinationPrefix::create(['prefix' => '34', 'country' => 'Spain']);
-        DestinationPrefix::create(['prefix' => '33', 'country' => 'France']);
-
-        CarrierRate::create([
-            'carrier_id' => $carrier->id,
+        $prefix = DestinationPrefix::create([
             'prefix' => '34',
-            'rate_per_minute' => 0.01,
-            'billing_increment' => 1,
+            'country_code' => 'ES',
+            'country_name' => 'Spain',
             'active' => true,
         ]);
 
-        // Spain should match
-        $result = $this->lcrService->selectCarrier('34612345678');
-        $this->assertNotNull($result);
+        CarrierRate::create([
+            'carrier_id' => $carrier->id,
+            'destination_prefix_id' => $prefix->id,
+            'cost_per_minute' => 0.015,
+            'connection_fee' => 0.001,
+            'billing_increment' => 6,
+            'effective_date' => now()->subDay(),
+            'active' => true,
+        ]);
 
-        // France should not match (no rate configured and prefix_filter)
-        $result = $this->lcrService->selectCarrier('33612345678');
-        $this->assertNull($result);
+        $result = $this->lcrService->lcrLookup('34612345678');
+
+        $this->assertEquals('34612345678', $result['number']);
+        $this->assertNotNull($result['prefix']);
+        $this->assertEquals('34', $result['prefix']['prefix']);
+        $this->assertCount(1, $result['carriers']);
+        $this->assertEquals('Test Carrier', $result['carriers'][0]['carrier_name']);
+        $this->assertEquals(0.015, $result['carriers'][0]['cost_per_minute']);
     }
 }
