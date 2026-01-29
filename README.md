@@ -1,59 +1,307 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# VoIP Termination System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema completo de terminacion VoIP con panel de administracion, API REST y portal de clientes.
 
-## About Laravel
+## Caracteristicas
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Core
+- **Autenticacion por IP** - Validacion de IPs autorizadas por cliente
+- **Control de Limites** - Canales simultaneos, CPS, minutos diarios/mensuales
+- **LCR (Least Cost Routing)** - Enrutamiento inteligente basado en costo y prioridad
+- **Failover Automatico** - Reintento con carriers alternativos
+- **Accounting Completo** - CDRs detallados con trazas SIP
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Panel de Administracion
+- Dashboard en tiempo real con llamadas activas
+- Gestion de clientes e IPs autorizadas
+- Gestion de carriers con monitoreo de estado
+- Visor de CDRs con filtros avanzados
+- Sistema de alertas con notificaciones
+- Gestion de webhooks
+- Blacklist de IPs
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Fase 2 - Funcionalidades Avanzadas
+- **LCR + Tarifas** - Gestion completa de tarifas por destino, planes de precios
+- **QoS (Calidad)** - Metricas MOS, PDD, alertas de degradacion
+- **Reportes Programados** - Envio automatico de estadisticas por email (PDF/CSV)
+- **Deteccion de Fraude** - Patrones sospechosos, Wangiri, picos de trafico
+- **Portal Multi-tenant** - Acceso de clientes a sus propios datos
 
-## Learning Laravel
+### API REST
+- Endpoints completos para integraciones
+- Autenticacion por token con rate limiting
+- Webhooks para eventos en tiempo real
+- Documentacion Swagger/OpenAPI
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Requisitos
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Ubuntu 22.04 / 24.04 LTS
+- PHP 8.2+
+- MariaDB 10.6+
+- Redis 6+
+- Nginx
+- Kamailio 5.7+
+- Composer 2.x
+- Node.js 18+ (para assets)
 
-## Laravel Sponsors
+## Instalacion
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 1. Clonar el repositorio
 
-### Premium Partners
+```bash
+cd /var/www
+git clone https://github.com/canyoneiro/voip-termination-system.git voip-panel
+cd voip-panel
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 2. Instalar dependencias PHP
 
-## Contributing
+```bash
+composer install --no-dev --optimize-autoloader
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Configurar entorno
 
-## Code of Conduct
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Editar `.env` con las credenciales de base de datos y Redis:
 
-## Security Vulnerabilities
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=voip
+DB_USERNAME=voip_user
+DB_PASSWORD=tu_password_seguro
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+```
 
-## License
+### 4. Ejecutar migraciones
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan migrate --force
+php artisan db:seed --class=FraudRulesSeeder --force
+```
+
+### 5. Compilar assets
+
+```bash
+npm install
+npm run build
+```
+
+### 6. Configurar permisos
+
+```bash
+chown -R www-data:www-data storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
+```
+
+### 7. Configurar colas
+
+```bash
+# Copiar configuracion de supervisor
+sudo cp /var/www/voip-panel/supervisor-worker.conf /etc/supervisor/conf.d/voip-worker.conf
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start voip-worker:*
+```
+
+### 8. Configurar scheduler
+
+Agregar al crontab:
+
+```bash
+* * * * * cd /var/www/voip-panel && php artisan schedule:run >> /dev/null 2>&1
+```
+
+## Estructura del Sistema
+
+```
+/var/www/voip-panel/          # Aplicacion Laravel
+/etc/kamailio/                # Configuracion Kamailio
+/var/log/voip/                # Logs del sistema
+/var/backups/voip/            # Backups automaticos
+```
+
+## Arquitectura
+
+```
+                    +-----------------+
+                    |   Clientes SIP  |
+                    +--------+--------+
+                             |
+                    +--------v--------+
+                    |    Kamailio     |
+                    |   (SIP Proxy)   |
+                    +--------+--------+
+                             |
+        +--------------------+--------------------+
+        |                    |                    |
++-------v-------+    +-------v-------+    +-------v-------+
+|    MariaDB    |    |     Redis     |    |    Laravel    |
+| (CDRs, Config)|    | (Stats, Cache)|    |  (Panel, API) |
++---------------+    +---------------+    +---------------+
+                                                  |
+                                          +-------v-------+
+                                          |    Carriers   |
+                                          +---------------+
+```
+
+## API Endpoints
+
+### Publicos
+- `GET /api/v1/health` - Estado del sistema
+- `GET /api/v1/ping` - Health check simple
+
+### Clientes
+- `GET /api/v1/customers` - Listar clientes
+- `POST /api/v1/customers` - Crear cliente
+- `GET /api/v1/customers/{id}` - Ver cliente
+- `PUT /api/v1/customers/{id}` - Actualizar cliente
+- `GET /api/v1/customers/{id}/usage` - Uso actual
+
+### Carriers
+- `GET /api/v1/carriers` - Listar carriers
+- `POST /api/v1/carriers` - Crear carrier
+- `GET /api/v1/carriers/{id}/status` - Estado del carrier
+
+### CDRs
+- `GET /api/v1/cdrs` - Listar CDRs con filtros
+- `GET /api/v1/cdrs/{uuid}` - Detalle de CDR
+- `GET /api/v1/cdrs/{uuid}/trace` - Traza SIP
+
+### Estadisticas
+- `GET /api/v1/stats/realtime` - Metricas en tiempo real
+- `GET /api/v1/stats/summary` - Resumen del periodo
+- `GET /api/v1/stats/by-customer` - Stats por cliente
+
+### QoS
+- `GET /api/v1/qos/realtime` - Metricas QoS tiempo real
+- `GET /api/v1/qos/trends` - Tendencias
+- `GET /api/v1/qos/by-carrier` - QoS por carrier
+
+### Fraude
+- `GET /api/v1/fraud/incidents` - Incidentes detectados
+- `GET /api/v1/fraud/rules` - Reglas de deteccion
+- `GET /api/v1/fraud/risk-scores` - Puntuacion de riesgo
+
+### Tarifas
+- `GET /api/v1/rates/lcr-lookup` - Consulta LCR
+- `GET /api/v1/rates/destinations` - Destinos
+- `GET /api/v1/rates/carrier-rates` - Tarifas de carriers
+
+### Reportes
+- `GET /api/v1/reports` - Reportes programados
+- `POST /api/v1/reports/{id}/trigger` - Ejecutar reporte
+
+## Portal de Clientes
+
+Acceso para clientes en `/portal`:
+- Dashboard con estadisticas propias
+- Historial de CDRs
+- Gestion de IPs autorizadas
+- Solicitud de nuevas IPs
+- Gestion de perfil
+
+## Comandos Artisan
+
+### Clientes
+```bash
+php artisan customer:list
+php artisan customer:create "Nombre" --ip=1.2.3.4
+php artisan customer:reset-minutes {id}
+```
+
+### Carriers
+```bash
+php artisan carrier:list
+php artisan carrier:test {id}
+```
+
+### Sistema
+```bash
+php artisan kamailio:reload
+php artisan cleanup:all
+php artisan stats:daily
+```
+
+## Webhooks
+
+Eventos disponibles:
+- `call.started` - Nueva llamada
+- `call.answered` - Llamada contestada
+- `call.ended` - Llamada terminada (incluye CDR)
+- `customer.minutes_warning` - 80% de minutos consumidos
+- `carrier.down` - Carrier caido
+- `alert.created` - Nueva alerta
+
+## Deteccion de Fraude
+
+Tipos de deteccion:
+- **Alto Costo** - Llamadas a prefijos premium (900, 901, etc.)
+- **Picos de Trafico** - Aumento anormal vs media historica
+- **Wangiri** - Muchas llamadas cortas (<6s)
+- **Destinos Inusuales** - Paises/prefijos nunca usados
+- **Alta Tasa de Fallos** - >80% de llamadas fallidas
+- **Consumo Acelerado** - Uso de minutos >300% de lo normal
+
+## Seguridad
+
+- Autenticacion por IP para trafico SIP
+- Rate limiting en API
+- Fail2ban para intentos de acceso
+- Blacklist automatica de IPs sospechosas
+- HTTPS obligatorio para panel y API
+- Audit log de acciones administrativas
+
+## Monitoreo
+
+### Health Check
+```bash
+curl https://tu-dominio.com/api/v1/health
+```
+
+### Metricas Prometheus
+```bash
+curl https://tu-dominio.com/api/v1/metrics
+```
+
+## Backup
+
+Los backups se ejecutan automaticamente:
+- Diario: 01:00 AM
+- Ubicacion: `/var/backups/voip/daily/`
+
+Backup manual:
+```bash
+php artisan db:backup --encrypt
+```
+
+## Troubleshooting
+
+### Llamada no conecta
+1. Verificar IP del cliente esta autorizada
+2. Revisar logs de Kamailio: `tail -f /var/log/voip/kamailio/kamailio.log`
+3. Verificar carrier activo y respondiendo
+
+### 403 Forbidden
+- IP no autorizada o en blacklist
+- Verificar: `php artisan blacklist:list`
+
+### Carrier marcado como down
+- Revisar respuesta OPTIONS
+- Test manual: `php artisan carrier:test {id}`
+
+## Licencia
+
+MIT License
+
+## Soporte
+
+Para reportar problemas: https://github.com/canyoneiro/voip-termination-system/issues

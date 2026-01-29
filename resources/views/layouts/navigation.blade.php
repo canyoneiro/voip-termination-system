@@ -44,10 +44,41 @@
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                         Blacklist
                     </a>
-                    <a href="{{ route('webhooks.index') }}" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('webhooks.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                        Webhooks
-                    </a>
+                    <!-- More Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all {{ request()->routeIs('qos.*') || request()->routeIs('fraud.*') || request()->routeIs('reports.*') || request()->routeIs('rates.*') || request()->routeIs('webhooks.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                            Mas
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute left-0 mt-2 w-56 rounded-xl bg-white border border-slate-200 shadow-lg py-1 z-50">
+                            <a href="{{ route('qos.index') }}" class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('qos.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                QoS / Calidad
+                            </a>
+                            <a href="{{ route('fraud.index') }}" class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('fraud.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                Fraude
+                                @php $pendingFraud = \App\Models\FraudIncident::where('status', 'pending')->count(); @endphp
+                                @if($pendingFraud > 0)
+                                    <span class="ml-auto px-1.5 py-0.5 text-xs font-bold bg-orange-500 text-white rounded-full">{{ $pendingFraud }}</span>
+                                @endif
+                            </a>
+                            <a href="{{ route('reports.index') }}" class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('reports.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Reportes
+                            </a>
+                            <a href="{{ route('rates.index') }}" class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('rates.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Tarifas / LCR
+                            </a>
+                            <hr class="my-1 border-slate-200">
+                            <a href="{{ route('webhooks.index') }}" class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('webhooks.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                                Webhooks
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -107,6 +138,11 @@
             <a href="{{ route('cdrs.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('cdrs.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">CDRs</a>
             <a href="{{ route('alerts.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('alerts.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Alertas</a>
             <a href="{{ route('blacklist.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('blacklist.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Blacklist</a>
+            <hr class="my-2 border-slate-200">
+            <a href="{{ route('qos.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('qos.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">QoS / Calidad</a>
+            <a href="{{ route('fraud.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('fraud.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Fraude</a>
+            <a href="{{ route('reports.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('reports.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Reportes</a>
+            <a href="{{ route('rates.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('rates.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Tarifas / LCR</a>
             <a href="{{ route('webhooks.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('webhooks.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600' }}">Webhooks</a>
         </div>
 
