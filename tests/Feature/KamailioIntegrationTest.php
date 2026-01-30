@@ -4,9 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\ActiveCall;
 use App\Models\Carrier;
+use App\Models\CarrierRate;
 use App\Models\Cdr;
 use App\Models\Customer;
 use App\Models\CustomerIp;
+use App\Models\CustomerRate;
+use App\Models\DestinationPrefix;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
@@ -19,6 +22,51 @@ use Tests\TestCase;
  */
 class KamailioIntegrationTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected Customer $customer;
+    protected Carrier $carrier;
+    protected CustomerIp $customerIp;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create test customer
+        $this->customer = Customer::create([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'name' => 'Test Customer',
+            'company' => 'Test Company',
+            'email' => 'test@example.com',
+            'max_channels' => 10,
+            'max_cps' => 5,
+            'active' => true,
+        ]);
+
+        // Create test customer IP
+        $this->customerIp = CustomerIp::create([
+            'customer_id' => $this->customer->id,
+            'ip_address' => '192.168.1.100',
+            'description' => 'Test IP',
+            'active' => true,
+        ]);
+
+        // Create test carrier
+        $this->carrier = Carrier::create([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'name' => 'Test Carrier',
+            'host' => '10.0.0.1',
+            'port' => 5060,
+            'transport' => 'udp',
+            'codecs' => 'G729,PCMA,PCMU',
+            'priority' => 1,
+            'weight' => 100,
+            'max_cps' => 10,
+            'max_channels' => 50,
+            'state' => 'active',
+        ]);
+    }
+
     /**
      * Test that Redis is accessible and working
      */
@@ -70,6 +118,23 @@ class KamailioIntegrationTest extends TestCase
      */
     public function test_carrier_rate_lookup(): void
     {
+        // Create destination prefix for Spain
+        $prefix = DestinationPrefix::create([
+            'prefix' => '34',
+            'name' => 'Spain',
+            'country_code' => 'ES',
+        ]);
+
+        // Create carrier rate
+        CarrierRate::create([
+            'carrier_id' => $this->carrier->id,
+            'destination_prefix_id' => $prefix->id,
+            'cost_per_minute' => 0.015,
+            'billing_increment' => 6,
+            'effective_date' => now()->toDateString(),
+            'active' => true,
+        ]);
+
         // Check if we can find a rate for Spain (34)
         $carrier = Carrier::where('state', 'active')
             ->whereHas('rates', function ($query) {
@@ -88,6 +153,23 @@ class KamailioIntegrationTest extends TestCase
      */
     public function test_customer_rate_lookup(): void
     {
+        // Create destination prefix
+        $prefix = DestinationPrefix::create([
+            'prefix' => '1',
+            'name' => 'USA',
+            'country_code' => 'US',
+        ]);
+
+        // Create customer rate
+        CustomerRate::create([
+            'customer_id' => $this->customer->id,
+            'destination_prefix_id' => $prefix->id,
+            'price_per_minute' => 0.02,
+            'billing_increment' => 6,
+            'effective_date' => now()->toDateString(),
+            'active' => true,
+        ]);
+
         $customer = Customer::where('active', true)
             ->whereHas('rates', function ($query) {
                 $query->where('active', true);
@@ -103,17 +185,11 @@ class KamailioIntegrationTest extends TestCase
      */
     public function test_cdr_can_be_created(): void
     {
-        $customer = Customer::where('active', true)->first();
-        $carrier = Carrier::where('state', 'active')->first();
-
-        $this->assertNotNull($customer);
-        $this->assertNotNull($carrier);
-
         $cdr = Cdr::create([
             'uuid' => (string) \Illuminate\Support\Str::uuid(),
             'call_id' => 'test-call-' . uniqid(),
-            'customer_id' => $customer->id,
-            'carrier_id' => $carrier->id,
+            'customer_id' => $this->customer->id,
+            'carrier_id' => $this->carrier->id,
             'source_ip' => '127.0.0.1',
             'caller' => '34666123456',
             'caller_original' => '34666123456',
@@ -127,10 +203,7 @@ class KamailioIntegrationTest extends TestCase
         ]);
 
         $this->assertNotNull($cdr->id);
-        $this->assertEquals($customer->id, $cdr->customer_id);
-
-        // Cleanup
-        $cdr->delete();
+        $this->assertEquals($this->customer->id, $cdr->customer_id);
     }
 
     /**
@@ -138,14 +211,11 @@ class KamailioIntegrationTest extends TestCase
      */
     public function test_active_call_tracking(): void
     {
-        $customer = Customer::where('active', true)->first();
-        $this->assertNotNull($customer);
-
         $callId = 'test-active-' . uniqid();
 
         $activeCall = ActiveCall::create([
             'call_id' => $callId,
-            'customer_id' => $customer->id,
+            'customer_id' => $this->customer->id,
             'caller' => '34666123456',
             'callee' => '34911234567',
             'source_ip' => '127.0.0.1',
@@ -158,9 +228,6 @@ class KamailioIntegrationTest extends TestCase
         // Verify we can find it
         $found = ActiveCall::where('call_id', $callId)->first();
         $this->assertNotNull($found);
-
-        // Cleanup
-        $activeCall->delete();
     }
 
     /**
@@ -168,10 +235,7 @@ class KamailioIntegrationTest extends TestCase
      */
     public function test_redis_call_counters(): void
     {
-        $customer = Customer::where('active', true)->first();
-        $this->assertNotNull($customer);
-
-        $key = "customer:{$customer->id}:active_calls";
+        $key = "customer:{$this->customer->id}:active_calls";
 
         // Set counter
         Redis::set($key, 5);
@@ -192,23 +256,21 @@ class KamailioIntegrationTest extends TestCase
      */
     public function test_customer_channel_limit(): void
     {
-        $customer = Customer::where('active', true)->first();
-        $this->assertNotNull($customer);
-        $this->assertGreaterThan(0, $customer->max_channels);
+        $this->assertGreaterThan(0, $this->customer->max_channels);
 
-        $key = "customer:{$customer->id}:active_calls";
+        $key = "customer:{$this->customer->id}:active_calls";
 
         // Set calls to max - 1
-        Redis::set($key, $customer->max_channels - 1);
+        Redis::set($key, $this->customer->max_channels - 1);
         $currentCalls = (int) Redis::get($key);
 
-        $this->assertTrue($currentCalls < $customer->max_channels, 'Customer should have capacity');
+        $this->assertTrue($currentCalls < $this->customer->max_channels, 'Customer should have capacity');
 
         // Set calls to max
-        Redis::set($key, $customer->max_channels);
+        Redis::set($key, $this->customer->max_channels);
         $currentCalls = (int) Redis::get($key);
 
-        $this->assertFalse($currentCalls < $customer->max_channels, 'Customer should be at capacity');
+        $this->assertFalse($currentCalls < $this->customer->max_channels, 'Customer should be at capacity');
 
         // Cleanup
         Redis::del($key);
@@ -219,22 +281,22 @@ class KamailioIntegrationTest extends TestCase
      */
     public function test_billing_calculation(): void
     {
-        $customer = Customer::where('active', true)
-            ->whereHas('rates')
-            ->first();
+        // Create destination prefix
+        $prefix = DestinationPrefix::create([
+            'prefix' => '44',
+            'name' => 'UK',
+            'country_code' => 'GB',
+        ]);
 
-        if (!$customer) {
-            $this->markTestSkipped('No customer with rates found');
-        }
-
-        $rate = $customer->rates()
-            ->where('active', true)
-            ->whereHas('destinationPrefix')
-            ->first();
-
-        if (!$rate) {
-            $this->markTestSkipped('No rate found for customer');
-        }
+        // Create customer rate
+        $rate = CustomerRate::create([
+            'customer_id' => $this->customer->id,
+            'destination_prefix_id' => $prefix->id,
+            'price_per_minute' => 0.025,
+            'billing_increment' => 6,
+            'effective_date' => now()->toDateString(),
+            'active' => true,
+        ]);
 
         // Calculate cost for 60 seconds
         $duration = 60;
@@ -251,6 +313,21 @@ class KamailioIntegrationTest extends TestCase
      */
     public function test_carrier_priority_order(): void
     {
+        // Create additional carriers with different priorities
+        Carrier::create([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'name' => 'Carrier Priority 2',
+            'host' => '10.0.0.2',
+            'port' => 5060,
+            'transport' => 'udp',
+            'codecs' => 'G729,PCMA',
+            'priority' => 2,
+            'weight' => 50,
+            'max_cps' => 10,
+            'max_channels' => 50,
+            'state' => 'active',
+        ]);
+
         $carriers = Carrier::where('state', 'active')
             ->orderBy('priority')
             ->orderByDesc('weight')

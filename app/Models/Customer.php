@@ -121,6 +121,11 @@ class Customer extends Model
         return $this->hasMany(CustomerRate::class);
     }
 
+    public function rates(): HasMany
+    {
+        return $this->customerRates();
+    }
+
     public function portalSettings(): HasOne
     {
         return $this->hasOne(CustomerPortalSettings::class);

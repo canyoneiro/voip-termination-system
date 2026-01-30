@@ -66,6 +66,11 @@ class Carrier extends Model
         return $this->hasMany(CarrierIp::class);
     }
 
+    public function rates(): HasMany
+    {
+        return $this->hasMany(CarrierRate::class);
+    }
+
     public function cdrs(): HasMany
     {
         return $this->hasMany(Cdr::class);
