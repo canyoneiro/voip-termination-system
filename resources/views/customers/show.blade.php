@@ -60,6 +60,33 @@
                         </div>
                         @endif
                     </dl>
+
+                    <!-- Formato de Numeracion -->
+                    <div class="mt-5 pt-4 border-t border-gray-700/50">
+                        <h4 class="text-xs font-semibold text-gray-400 mb-3">Formato de Numeracion</h4>
+                        <dl class="space-y-2">
+                            <div class="flex justify-between">
+                                <dt class="text-xs text-gray-500">Formato entrada</dt>
+                                <dd class="text-xs text-gray-300">
+                                    @switch($customer->number_format ?? 'auto')
+                                        @case('auto')
+                                            <span class="badge badge-blue">Auto</span>
+                                            @break
+                                        @case('international')
+                                            <span class="badge badge-green">Internacional</span>
+                                            @break
+                                        @case('national_es')
+                                            <span class="badge badge-yellow">Nacional ES</span>
+                                            @break
+                                    @endswitch
+                                </dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-xs text-gray-500">Codigo pais</dt>
+                                <dd class="text-xs text-gray-300 font-mono">+{{ $customer->default_country_code ?? '34' }}</dd>
+                            </div>
+                        </dl>
+                    </div>
                 </div>
 
                 <!-- Limites y Uso -->

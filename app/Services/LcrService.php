@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Redis;
 
 class LcrService
 {
+    protected NumberNormalizationService $normalizationService;
+
+    public function __construct(NumberNormalizationService $normalizationService)
+    {
+        $this->normalizationService = $normalizationService;
+    }
+
     protected array $codecQuality = [
         'PCMU' => 4.5,    // G.711 u-law
         'PCMA' => 4.5,    // G.711 a-law
@@ -25,29 +32,52 @@ class LcrService
 
     /**
      * Select the best carrier for a call based on LCR
+     *
+     * This method first normalizes the called number according to the customer's
+     * number format settings, then performs the LCR lookup.
      */
     public function selectCarrier(string $calledNumber, Customer $customer, array $options = []): ?array
     {
-        $prefix = $this->findDestinationPrefix($calledNumber);
+        // Normalize the number according to customer's settings
+        $normalization = $this->normalizationService->normalize($calledNumber, $customer);
+        $normalizedNumber = $normalization['normalized'];
+        $originalNumber = $calledNumber;
 
-        // Check customer's dialing plan restrictions
-        $dialingCheck = $this->checkDialingPlan($customer, $calledNumber, $prefix);
+        $prefix = $this->findDestinationPrefix($normalizedNumber);
+
+        // Check customer's dialing plan restrictions using normalized number
+        $dialingCheck = $this->checkDialingPlan($customer, $normalizedNumber, $prefix);
         if (!$dialingCheck['allowed']) {
             return [
                 'error' => true,
                 'code' => 403,
                 'reason' => $dialingCheck['reason'],
                 'message' => $dialingCheck['message'],
+                'original_number' => $originalNumber,
+                'normalized_number' => $normalizedNumber,
+                'normalization' => $normalization,
             ];
         }
 
         if (!$prefix) {
-            return $this->fallbackToPriority($calledNumber, $options);
+            $result = $this->fallbackToPriority($normalizedNumber, $options);
+            if ($result) {
+                $result['original_number'] = $originalNumber;
+                $result['normalized_number'] = $normalizedNumber;
+                $result['normalization'] = $normalization;
+            }
+            return $result;
         }
 
         $carrierRates = $this->getCarrierRatesForDestination($prefix, $options);
         if ($carrierRates->isEmpty()) {
-            return $this->fallbackToPriority($calledNumber, $options);
+            $result = $this->fallbackToPriority($normalizedNumber, $options);
+            if ($result) {
+                $result['original_number'] = $originalNumber;
+                $result['normalized_number'] = $normalizedNumber;
+                $result['normalization'] = $normalization;
+            }
+            return $result;
         }
 
         // Filter by carrier availability (channels, CPS)
@@ -59,12 +89,21 @@ class LcrService
                     'rate' => $rate,
                     'prefix' => $prefix,
                     'cost_per_minute' => $rate->cost_per_minute,
+                    'original_number' => $originalNumber,
+                    'normalized_number' => $normalizedNumber,
+                    'normalization' => $normalization,
                 ];
             }
         }
 
         // All carriers busy, try fallback
-        return $this->fallbackToPriority($calledNumber, $options);
+        $result = $this->fallbackToPriority($normalizedNumber, $options);
+        if ($result) {
+            $result['original_number'] = $originalNumber;
+            $result['normalized_number'] = $normalizedNumber;
+            $result['normalization'] = $normalization;
+        }
+        return $result;
     }
 
     /**
@@ -365,9 +404,21 @@ class LcrService
      */
     public function lcrLookup(string $number, ?int $customerId = null): array
     {
-        $prefix = $this->findDestinationPrefix($number);
+        $customer = $customerId ? Customer::find($customerId) : null;
+
+        // Normalize number if customer is specified
+        $normalization = null;
+        $normalizedNumber = $number;
+        if ($customer) {
+            $normalization = $this->normalizationService->normalize($number, $customer);
+            $normalizedNumber = $normalization['normalized'];
+        }
+
+        $prefix = $this->findDestinationPrefix($normalizedNumber);
         $result = [
             'number' => $number,
+            'normalized_number' => $normalizedNumber,
+            'normalization' => $normalization,
             'prefix' => $prefix ? [
                 'id' => $prefix->id,
                 'prefix' => $prefix->prefix,

@@ -92,6 +92,133 @@
                         </div>
                     </div>
 
+                    <!-- Formato de Numeracion -->
+                    <div class="mb-8">
+                        <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">
+                            Formato de Numeracion
+                            <span class="ml-2 text-xs font-normal text-blue-400 cursor-help" title="Click para mas informacion" onclick="document.getElementById('number-format-help').classList.toggle('hidden')">
+                                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Ayuda
+                            </span>
+                        </h3>
+
+                        <!-- Panel de Ayuda -->
+                        <div id="number-format-help" class="hidden mb-6 p-4 bg-blue-900/30 border border-blue-700/50 rounded-lg">
+                            <h4 class="text-sm font-semibold text-blue-300 mb-3">Como funciona la normalizacion de numeros</h4>
+                            <div class="space-y-4 text-sm text-gray-300">
+                                <div>
+                                    <p class="font-medium text-white mb-1">Deteccion Automatica (Recomendado)</p>
+                                    <p class="text-gray-400">El sistema detecta automaticamente el formato del numero recibido:</p>
+                                    <ul class="mt-2 ml-4 space-y-1 text-xs">
+                                        <li><code class="bg-gray-800 px-1 rounded">666123456</code> → <code class="bg-green-900/50 px-1 rounded text-green-300">34666123456</code> <span class="text-gray-500">(detectado como nacional)</span></li>
+                                        <li><code class="bg-gray-800 px-1 rounded">34666123456</code> → <code class="bg-green-900/50 px-1 rounded text-green-300">34666123456</code> <span class="text-gray-500">(ya es internacional)</span></li>
+                                        <li><code class="bg-gray-800 px-1 rounded">+34666123456</code> → <code class="bg-green-900/50 px-1 rounded text-green-300">34666123456</code> <span class="text-gray-500">(internacional con +)</span></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-white mb-1">Internacional (E.164)</p>
+                                    <p class="text-gray-400">El cliente siempre envia numeros con codigo de pais. Acepta con o sin el signo +.</p>
+                                    <ul class="mt-2 ml-4 space-y-1 text-xs">
+                                        <li><code class="bg-gray-800 px-1 rounded">34666123456</code> → <code class="bg-green-900/50 px-1 rounded text-green-300">34666123456</code></li>
+                                        <li><code class="bg-gray-800 px-1 rounded">+34666123456</code> → <code class="bg-green-900/50 px-1 rounded text-green-300">34666123456</code></li>
+                                        <li><code class="bg-gray-800 px-1 rounded">1234567890</code> → <code class="bg-green-900/50 px-1 rounded text-green-300">1234567890</code> <span class="text-gray-500">(se asume internacional)</span></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-white mb-1">Nacional Espana</p>
+                                    <p class="text-gray-400">El cliente envia numeros en formato nacional espanol (9 digitos). Se anade automaticamente el prefijo 34.</p>
+                                    <ul class="mt-2 ml-4 space-y-1 text-xs">
+                                        <li><code class="bg-gray-800 px-1 rounded">666123456</code> → <code class="bg-green-900/50 px-1 rounded text-green-300">34666123456</code></li>
+                                        <li><code class="bg-gray-800 px-1 rounded">911234567</code> → <code class="bg-green-900/50 px-1 rounded text-green-300">34911234567</code></li>
+                                        <li><code class="bg-gray-800 px-1 rounded">34666123456</code> → <code class="bg-green-900/50 px-1 rounded text-green-300">34666123456</code> <span class="text-gray-500">(ya tiene prefijo)</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-blue-700/50">
+                                <p class="text-xs text-blue-400">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                                    La normalizacion se aplica antes del enrutamiento LCR y la verificacion del plan de marcacion, asegurando que los numeros siempre se procesen en formato E.164.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="number_format" class="block text-sm font-medium text-gray-300">Formato de Entrada</label>
+                                <select name="number_format" id="number_format" class="dark-input mt-1 w-full py-2 px-3">
+                                    <option value="auto" {{ old('number_format', $customer->number_format) == 'auto' ? 'selected' : '' }}>
+                                        Deteccion Automatica (Recomendado)
+                                    </option>
+                                    <option value="international" {{ old('number_format', $customer->number_format) == 'international' ? 'selected' : '' }}>
+                                        Internacional (E.164)
+                                    </option>
+                                    <option value="national_es" {{ old('number_format', $customer->number_format) == 'national_es' ? 'selected' : '' }}>
+                                        Nacional Espana (9 digitos)
+                                    </option>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">Como envia el cliente los numeros destino</p>
+                            </div>
+                            <div>
+                                <label for="default_country_code" class="block text-sm font-medium text-gray-300">Codigo de Pais por Defecto</label>
+                                <select name="default_country_code" id="default_country_code" class="dark-input mt-1 w-full py-2 px-3">
+                                    <option value="34" {{ old('default_country_code', $customer->default_country_code) == '34' ? 'selected' : '' }}>34 - Espana</option>
+                                    <option value="351" {{ old('default_country_code', $customer->default_country_code) == '351' ? 'selected' : '' }}>351 - Portugal</option>
+                                    <option value="33" {{ old('default_country_code', $customer->default_country_code) == '33' ? 'selected' : '' }}>33 - Francia</option>
+                                    <option value="44" {{ old('default_country_code', $customer->default_country_code) == '44' ? 'selected' : '' }}>44 - Reino Unido</option>
+                                    <option value="49" {{ old('default_country_code', $customer->default_country_code) == '49' ? 'selected' : '' }}>49 - Alemania</option>
+                                    <option value="39" {{ old('default_country_code', $customer->default_country_code) == '39' ? 'selected' : '' }}>39 - Italia</option>
+                                    <option value="1" {{ old('default_country_code', $customer->default_country_code) == '1' ? 'selected' : '' }}>1 - USA/Canada</option>
+                                    <option value="52" {{ old('default_country_code', $customer->default_country_code) == '52' ? 'selected' : '' }}>52 - Mexico</option>
+                                    <option value="54" {{ old('default_country_code', $customer->default_country_code) == '54' ? 'selected' : '' }}>54 - Argentina</option>
+                                    <option value="57" {{ old('default_country_code', $customer->default_country_code) == '57' ? 'selected' : '' }}>57 - Colombia</option>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">Usado para formato nacional o deteccion automatica</p>
+                            </div>
+                        </div>
+
+                        <!-- Opciones avanzadas -->
+                        <div class="mt-4 p-4 bg-gray-800/30 rounded-lg">
+                            <p class="text-xs font-semibold text-gray-400 mb-3">Opciones de formato de salida</p>
+                            <div class="flex flex-wrap gap-6">
+                                <label class="flex items-center">
+                                    <input type="hidden" name="strip_plus_sign" value="0">
+                                    <input type="checkbox" name="strip_plus_sign" value="1" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-offset-gray-800"
+                                        {{ old('strip_plus_sign', $customer->strip_plus_sign) ? 'checked' : '' }}>
+                                    <span class="ml-2 text-sm text-gray-300">Eliminar signo + del numero</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="hidden" name="add_plus_sign" value="0">
+                                    <input type="checkbox" name="add_plus_sign" value="1" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-offset-gray-800"
+                                        {{ old('add_plus_sign', $customer->add_plus_sign) ? 'checked' : '' }}>
+                                    <span class="ml-2 text-sm text-gray-300">Anadir signo + al numero normalizado</span>
+                                </label>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">Estas opciones controlan como se formatea el numero despues de la normalizacion, antes de enviarlo al carrier.</p>
+                        </div>
+
+                        <!-- Test de Normalizacion -->
+                        <div class="mt-4 p-4 bg-gray-800/30 rounded-lg">
+                            <p class="text-xs font-semibold text-gray-400 mb-3">Probar normalizacion</p>
+                            <div class="flex gap-3">
+                                <input type="text" id="test-number" placeholder="Introduce un numero para probar..."
+                                    class="dark-input flex-1 py-2 px-3 text-sm">
+                                <button type="button" onclick="testNormalization()" class="btn-secondary text-sm px-4">
+                                    Probar
+                                </button>
+                            </div>
+                            <div id="test-result" class="mt-3 hidden">
+                                <div class="flex items-center gap-3 text-sm">
+                                    <span class="text-gray-400">Entrada:</span>
+                                    <code id="test-input" class="bg-gray-800 px-2 py-1 rounded text-gray-300"></code>
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                    <span class="text-gray-400">Salida:</span>
+                                    <code id="test-output" class="bg-green-900/50 px-2 py-1 rounded text-green-300"></code>
+                                </div>
+                                <p id="test-message" class="mt-2 text-xs text-gray-400"></p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Limites -->
                     <div class="mb-8">
                         <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Limites de Servicio</h3>
@@ -176,4 +303,52 @@
             </div>
         </div>
     </div>
+    <script>
+        function testNormalization() {
+            const number = document.getElementById('test-number').value.trim();
+            if (!number) {
+                alert('Introduce un numero para probar');
+                return;
+            }
+
+            const format = document.getElementById('number_format').value;
+            const countryCode = document.getElementById('default_country_code').value;
+            const stripPlus = document.querySelector('input[name="strip_plus_sign"]:checked') !== null;
+            const addPlus = document.querySelector('input[name="add_plus_sign"]:checked') !== null;
+
+            fetch(`{{ route('customers.test-normalization') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    number: number,
+                    format: format,
+                    country_code: countryCode,
+                    strip_plus: stripPlus,
+                    add_plus: addPlus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('test-result').classList.remove('hidden');
+                document.getElementById('test-input').textContent = data.original;
+                document.getElementById('test-output').textContent = data.normalized;
+                document.getElementById('test-message').textContent = data.message || `Formato detectado: ${data.format_detected}`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al probar la normalizacion');
+            });
+        }
+
+        // Enter key to test
+        document.getElementById('test-number').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                testNormalization();
+            }
+        });
+    </script>
 </x-app-layout>

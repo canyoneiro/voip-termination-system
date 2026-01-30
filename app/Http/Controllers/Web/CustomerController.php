@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerIp;
+use App\Services\NumberNormalizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -40,6 +41,10 @@ class CustomerController extends Controller
             'alert_telegram_chat_id' => 'nullable|string|max:100',
             'rate_plan_id' => 'nullable|exists:rate_plans,id',
             'dialing_plan_id' => 'nullable|exists:dialing_plans,id',
+            'number_format' => 'in:auto,international,national_es',
+            'default_country_code' => 'string|max:3',
+            'strip_plus_sign' => 'boolean',
+            'add_plus_sign' => 'boolean',
         ]);
 
         $validated['uuid'] = Str::uuid();
@@ -84,6 +89,10 @@ class CustomerController extends Controller
             'alert_telegram_chat_id' => 'nullable|string|max:100',
             'rate_plan_id' => 'nullable|exists:rate_plans,id',
             'dialing_plan_id' => 'nullable|exists:dialing_plans,id',
+            'number_format' => 'in:auto,international,national_es',
+            'default_country_code' => 'string|max:3',
+            'strip_plus_sign' => 'boolean',
+            'add_plus_sign' => 'boolean',
             'active' => 'boolean',
             'traces_enabled' => 'boolean',
         ]);
@@ -147,5 +156,31 @@ class CustomerController extends Controller
         $customer->save();
 
         return back()->with('success', 'Minutes reset successfully');
+    }
+
+    /**
+     * Test number normalization with given settings
+     */
+    public function testNormalization(Request $request, NumberNormalizationService $normalizationService)
+    {
+        $validated = $request->validate([
+            'number' => 'required|string|max:30',
+            'format' => 'required|in:auto,international,national_es',
+            'country_code' => 'required|string|max:3',
+            'strip_plus' => 'boolean',
+            'add_plus' => 'boolean',
+        ]);
+
+        // Create a temporary customer object for testing
+        $customer = new Customer([
+            'number_format' => $validated['format'],
+            'default_country_code' => $validated['country_code'],
+            'strip_plus_sign' => $validated['strip_plus'] ?? true,
+            'add_plus_sign' => $validated['add_plus'] ?? false,
+        ]);
+
+        $result = $normalizationService->normalize($validated['number'], $customer);
+
+        return response()->json($result);
     }
 }

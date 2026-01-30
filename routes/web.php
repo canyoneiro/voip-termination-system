@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('customers/{customer}/ips', [CustomerController::class, 'addIp'])->name('customers.add-ip');
     Route::delete('customers/{customer}/ips/{ip}', [CustomerController::class, 'removeIp'])->name('customers.remove-ip');
     Route::post('customers/{customer}/reset-minutes', [CustomerController::class, 'resetMinutes'])->name('customers.reset-minutes');
+    Route::post('customers/test-normalization', [CustomerController::class, 'testNormalization'])->name('customers.test-normalization');
 
     // Carriers
     Route::resource('carriers', CarrierController::class);

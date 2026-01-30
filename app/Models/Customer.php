@@ -35,6 +35,10 @@ class Customer extends Model
         'portal_enabled',
         'rate_plan_id',
         'dialing_plan_id',
+        'number_format',
+        'default_country_code',
+        'strip_plus_sign',
+        'add_plus_sign',
         'notes',
         'alert_email',
         'alert_telegram_chat_id',
@@ -64,6 +68,8 @@ class Customer extends Model
         'low_balance_threshold' => 'decimal:4',
         'auto_suspend_on_zero' => 'boolean',
         'suspended_at' => 'datetime',
+        'strip_plus_sign' => 'boolean',
+        'add_plus_sign' => 'boolean',
     ];
 
     protected static function boot()
@@ -183,6 +189,28 @@ class Customer extends Model
         }
 
         return $this->dialingPlan->isNumberAllowed($number, $prefix);
+    }
+
+    /**
+     * Normalize a phone number according to customer's number format settings
+     */
+    public function normalizeNumber(string $number): array
+    {
+        $service = app(\App\Services\NumberNormalizationService::class);
+        return $service->normalize($number, $this);
+    }
+
+    /**
+     * Get number format label for UI
+     */
+    public function getNumberFormatLabelAttribute(): string
+    {
+        return match ($this->number_format) {
+            'international' => 'Internacional (E.164)',
+            'national_es' => 'Nacional España',
+            'auto' => 'Detección Automática',
+            default => 'Detección Automática',
+        };
     }
 
     /**
