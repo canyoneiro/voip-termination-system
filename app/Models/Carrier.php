@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Services\KamailioService;
+use App\Traits\ReloadsKamailio;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Carrier extends Model
 {
-    use HasFactory;
+    use HasFactory, ReloadsKamailio;
     protected $fillable = [
         'uuid',
         'name',
@@ -60,6 +62,22 @@ class Carrier extends Model
                 $model->uuid = (string) \Illuminate\Support\Str::uuid();
             }
         });
+    }
+
+    /**
+     * Specify Kamailio reload type for this model
+     */
+    protected function getKamailioReloadType(): string
+    {
+        return 'dispatcher';
+    }
+
+    /**
+     * Reload Kamailio dispatcher configuration (static helper)
+     */
+    public static function reloadDispatcher(): bool
+    {
+        return KamailioService::reloadDispatcher();
     }
 
     public function ips(): HasMany

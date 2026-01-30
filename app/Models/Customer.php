@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\KamailioService;
+use App\Traits\ReloadsKamailio;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Customer extends Model
 {
-    use HasFactory;
+    use HasFactory, ReloadsKamailio;
     protected $fillable = [
         'uuid',
         'name',
@@ -81,6 +83,15 @@ class Customer extends Model
                 $model->uuid = (string) \Illuminate\Support\Str::uuid();
             }
         });
+    }
+
+    /**
+     * Specify Kamailio reload type for this model
+     * Customer active status affects which IPs are authorized
+     */
+    protected function getKamailioReloadType(): string
+    {
+        return 'permissions';
     }
 
     public function ips(): HasMany

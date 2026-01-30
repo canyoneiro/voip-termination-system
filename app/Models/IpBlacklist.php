@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Services\KamailioService;
+use App\Traits\ReloadsKamailio;
 use Illuminate\Database\Eloquent\Model;
 
 class IpBlacklist extends Model
 {
+    use ReloadsKamailio;
+
     protected $table = 'ip_blacklist';
     public $timestamps = false;
 
@@ -30,6 +34,14 @@ class IpBlacklist extends Model
         static::creating(function ($model) {
             $model->created_at = now();
         });
+    }
+
+    /**
+     * Specify Kamailio reload type for this model
+     */
+    protected function getKamailioReloadType(): string
+    {
+        return 'htable';
     }
 
     public function isExpired(): bool

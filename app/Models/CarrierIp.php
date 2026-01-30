@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\ReloadsKamailio;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CarrierIp extends Model
 {
+    use ReloadsKamailio;
+
     protected $table = 'carrier_ips';
 
     protected $fillable = [
@@ -21,6 +24,15 @@ class CarrierIp extends Model
     ];
 
     public $timestamps = false;
+
+    /**
+     * Specify Kamailio reload type for this model
+     * Carrier IPs affect dispatcher or permissions depending on use
+     */
+    protected function getKamailioReloadType(): string
+    {
+        return 'dispatcher';
+    }
 
     public function carrier(): BelongsTo
     {
