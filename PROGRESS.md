@@ -176,6 +176,22 @@
 
 ---
 
+## Fase 6 - Normalizacion de Numeros (COMPLETADO)
+
+### Normalizacion de Formato de Numeracion por Cliente
+- [x] Migracion de BD (number_format, default_country_code, strip_plus_sign, add_plus_sign)
+- [x] NumberNormalizationService con soporte para multiples paises
+- [x] Tres modos de operacion: Auto, Internacional E.164, Nacional Espana
+- [x] Integracion en LcrService (normaliza antes de enrutar)
+- [x] Metodo normalizeNumber() en Customer
+- [x] Vista de configuracion en edicion de cliente
+- [x] Panel de ayuda detallado con ejemplos
+- [x] Herramienta de prueba en vivo
+- [x] Soporte para 10 codigos de pais (ES, PT, FR, DE, UK, IT, US, MX, AR, CO)
+- [x] Opciones de formato de salida (strip +, add +)
+
+---
+
 ## Proximos Pasos (Opcional)
 
 ### Mejoras Pendientes
@@ -194,6 +210,14 @@
 ---
 
 ## Registro de Cambios
+
+### 2026-01-30 (Fase 6 - Normalizacion de Numeros)
+- Implementado sistema de normalizacion de numeros por cliente
+- Soporte para formato internacional E.164, nacional Espana y deteccion automatica
+- NumberNormalizationService con patrones para 10 paises
+- Integracion completa con LcrService
+- Panel de configuracion con ayuda detallada y ejemplos visuales
+- Herramienta de prueba de normalizacion en vivo
 
 ### 2026-01-30 (Test Fixes)
 - Corregidos 11 tests fallidos en KamailioIntegrationTest
@@ -235,6 +259,7 @@
 - Documentacion actualizada
 
 ### Commits Principales
+- `feat(customers): add number format normalization per customer`
 - `fix(tests): add RefreshDatabase trait and missing model relations`
 - `feat(views): Add complete CRUD views for rates, reports, and fraud modules`
 - `feat: Implement Phase 2 features - LCR, QoS, Reports, Fraud Detection, Multi-tenant Portal`
