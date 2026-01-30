@@ -192,11 +192,38 @@
 
 ---
 
+## Fase 7 - Integracion Kamailio y Documentacion (COMPLETADO)
+
+### Observadores de Kamailio (Auto-Sync)
+- [x] KamailioAddress model para vista kamailio_address
+- [x] KamailioDispatcher model para vista kamailio_dispatcher
+- [x] CustomerIpObserver - recarga permissions al cambiar IPs
+- [x] CarrierObserver - recarga dispatcher al cambiar carriers
+- [x] Comando artisan kamailio:sync
+- [x] Metodos getCount() y reloadKamailio() en modelos
+- [x] Vistas MySQL auto-sincronizadas con tablas Laravel
+
+### Seccion de Ayuda Integral
+- [x] HelpController con estadisticas del sistema
+- [x] Vista /help con documentacion completa
+- [x] Seccion Clientes (IPs, limites, estados)
+- [x] Seccion Carriers (conexion, codecs, prioridades)
+- [x] Seccion Tarifas/LCR (destinos, planes, busqueda)
+- [x] Seccion Prepago/Postpago (tipos de facturacion)
+- [x] Seccion Dialing Plans (restricciones, wildcards)
+- [x] Seccion Normalizacion (formatos, E.164, nacional)
+- [x] Seccion CDRs (registros, filtros, export)
+- [x] Seccion Alertas (tipos, severidades, acciones)
+- [x] Seccion Arquitectura (flujo Kamailio, vistas MySQL)
+- [x] Enlace de navegacion en sidebar
+
+---
+
 ## Proximos Pasos (Opcional)
 
 ### Mejoras Pendientes
-- [x] Tests unitarios (131 tests pasando)
-- [x] Tests de integracion (KamailioIntegrationTest - 12 tests)
+- [x] Tests unitarios (133 tests pasando)
+- [x] Tests de integracion (KamailioIntegrationTest - 11 tests)
 - [ ] Dashboard estadisticas con mas graficas
 
 ### Ideas Futuras
@@ -210,6 +237,16 @@
 ---
 
 ## Registro de Cambios
+
+### 2026-01-30 (Fase 7 - Integracion Kamailio y Ayuda)
+- Implementado sistema de Observers para auto-sincronizacion con Kamailio
+- KamailioAddress y KamailioDispatcher ahora son modelos para las vistas MySQL
+- CustomerIpObserver recarga automaticamente el modulo permissions
+- CarrierObserver recarga automaticamente el modulo dispatcher
+- Nuevo comando artisan kamailio:sync para sincronizacion manual
+- Seccion de Ayuda completa con documentacion para administradores
+- Documentacion de flujo de llamadas, arquitectura y mejores practicas
+- 133 tests pasando (11 de integracion Kamailio)
 
 ### 2026-01-30 (Fase 6 - Normalizacion de Numeros)
 - Implementado sistema de normalizacion de numeros por cliente
@@ -259,6 +296,7 @@
 - Documentacion actualizada
 
 ### Commits Principales
+- `feat: add Kamailio sync observers and comprehensive Help section`
 - `feat(customers): add number format normalization per customer`
 - `fix(tests): add RefreshDatabase trait and missing model relations`
 - `feat(views): Add complete CRUD views for rates, reports, and fraud modules`
