@@ -14,6 +14,7 @@ use App\Http\Controllers\Web\RateController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SystemController;
 use App\Http\Controllers\Web\WebhookController;
+use App\Http\Controllers\Web\HelpController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,6 +24,9 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Help
+    Route::get('/help', [HelpController::class, 'index'])->name('help.index');
 
     // Customers
     Route::resource('customers', CustomerController::class);
