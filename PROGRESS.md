@@ -179,8 +179,8 @@
 ## Proximos Pasos (Opcional)
 
 ### Mejoras Pendientes
-- [ ] Tests unitarios
-- [ ] Tests de integracion
+- [x] Tests unitarios (131 tests pasando)
+- [x] Tests de integracion (KamailioIntegrationTest - 12 tests)
 - [ ] Dashboard estadisticas con mas graficas
 
 ### Ideas Futuras
@@ -194,6 +194,14 @@
 ---
 
 ## Registro de Cambios
+
+### 2026-01-30 (Test Fixes)
+- Corregidos 11 tests fallidos en KamailioIntegrationTest
+- Agregado trait RefreshDatabase para aislamiento de tests
+- Agregada relacion rates() a modelo Carrier (CarrierRate)
+- Agregado alias rates() a modelo Customer (delegacion a customerRates)
+- Refactorizados tests para crear datos propios en setUp()
+- Total: 131 tests pasando, 12 tests de integracion Kamailio funcionando
 
 ### 2026-01-29 (Fase 5)
 - Sistema de Dialing Plans implementado
@@ -227,5 +235,6 @@
 - Documentacion actualizada
 
 ### Commits Principales
+- `fix(tests): add RefreshDatabase trait and missing model relations`
 - `feat(views): Add complete CRUD views for rates, reports, and fraud modules`
 - `feat: Implement Phase 2 features - LCR, QoS, Reports, Fraud Detection, Multi-tenant Portal`
