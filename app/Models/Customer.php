@@ -39,6 +39,7 @@ class Customer extends Model
         'default_country_code',
         'strip_plus_sign',
         'add_plus_sign',
+        'force_cli',
         'notes',
         'alert_email',
         'alert_telegram_chat_id',

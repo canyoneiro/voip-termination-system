@@ -45,6 +45,7 @@ class CustomerController extends Controller
             'default_country_code' => 'string|max:3',
             'strip_plus_sign' => 'boolean',
             'add_plus_sign' => 'boolean',
+            'force_cli' => 'nullable|string|max:50',
         ]);
 
         $validated['uuid'] = Str::uuid();
@@ -93,6 +94,7 @@ class CustomerController extends Controller
             'default_country_code' => 'string|max:3',
             'strip_plus_sign' => 'boolean',
             'add_plus_sign' => 'boolean',
+            'force_cli' => 'nullable|string|max:50',
             'active' => 'boolean',
             'traces_enabled' => 'boolean',
         ]);

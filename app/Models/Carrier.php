@@ -20,6 +20,7 @@ class Carrier extends Model
         'weight',
         'tech_prefix',
         'strip_digits',
+        'number_format',
         'prefix_filter',
         'prefix_deny',
         'max_cps',

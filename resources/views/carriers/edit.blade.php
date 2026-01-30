@@ -128,6 +128,14 @@
                                 <input type="number" name="strip_digits" id="strip_digits" required min="0" max="20" value="{{ old('strip_digits', $carrier->strip_digits) }}"
                                     class="dark-input mt-1 w-full py-2 px-3">
                             </div>
+                            <div>
+                                <label for="number_format" class="block text-sm font-medium text-gray-300">Formato de Salida</label>
+                                <select name="number_format" id="number_format" class="dark-select mt-1 w-full py-2 px-3">
+                                    <option value="international" {{ old('number_format', $carrier->number_format) == 'international' ? 'selected' : '' }}>Internacional (E.164) - 34666123456</option>
+                                    <option value="national_es" {{ old('number_format', $carrier->number_format) == 'national_es' ? 'selected' : '' }}>Nacional España (sin 34) - 666123456</option>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">Como se envia el numero al carrier</p>
+                            </div>
                         </div>
                     </div>
 

@@ -196,6 +196,21 @@
                             <p class="mt-2 text-xs text-gray-500">Estas opciones controlan como se formatea el numero despues de la normalizacion, antes de enviarlo al carrier.</p>
                         </div>
 
+                        <!-- Force CLI -->
+                        <div class="mt-4 p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-lg">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-1">
+                                    <label for="force_cli" class="block text-sm font-medium text-yellow-300">Forzar CLI (Caller ID)</label>
+                                    <input type="text" name="force_cli" id="force_cli" value="{{ old('force_cli', $customer->force_cli) }}"
+                                        class="dark-input mt-1 w-full py-2 px-3" placeholder="Ej: 34680680680">
+                                    <p class="mt-1 text-xs text-gray-500">Si se especifica, todas las llamadas de este cliente saldran con este numero como CLI. Dejar vacio para usar el CLI original.</p>
+                                </div>
+                                <div class="pt-6">
+                                    <svg class="w-8 h-8 text-yellow-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Test de Normalizacion -->
                         <div class="mt-4 p-4 bg-gray-800/30 rounded-lg">
                             <p class="text-xs font-semibold text-gray-400 mb-3">Probar normalizacion</p>
