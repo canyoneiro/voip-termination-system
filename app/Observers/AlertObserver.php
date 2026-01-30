@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Jobs\SendAlertNotificationJob;
 use App\Models\Alert;
 use App\Services\WebhookService;
 
@@ -16,6 +17,10 @@ class AlertObserver
 
     public function created(Alert $alert): void
     {
+        // Send webhooks
         $this->webhookService->alertCreated($alert);
+
+        // Send email and Telegram notifications
+        SendAlertNotificationJob::dispatch($alert);
     }
 }

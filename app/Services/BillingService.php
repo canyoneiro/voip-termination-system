@@ -10,6 +10,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 
 class BillingService
 {
@@ -290,6 +291,10 @@ class BillingService
             'suspended_reason' => $reason,
         ]);
 
+        // Set Redis key so Kamailio can quickly reject calls
+        // This is checked in CHECK_CUSTOMER_STATUS route
+        Redis::set("customer:{$customer->id}:blocked", $reason);
+
         Alert::create([
             'type' => 'minutes_exhausted',
             'severity' => 'critical',
@@ -316,6 +321,9 @@ class BillingService
             'suspended_at' => null,
             'suspended_reason' => null,
         ]);
+
+        // Remove Redis block key so Kamailio allows calls again
+        Redis::del("customer:{$customer->id}:blocked");
 
         Log::info("Customer {$customer->id} unsuspended: {$reason}");
     }

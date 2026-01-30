@@ -30,43 +30,44 @@ Schedule::call(function () {
     AnalyzeFraudPatternsJob::dispatch();
 })->everyFiveMinutes()->name('fraud-analysis');
 
-// Scheduled reports processing
+// Scheduled reports processing - runs every minute to check for due reports
+// Uses next_run_at and send_time from ScheduledReport model
 Schedule::call(function () {
+    // Get reports that are due (next_run_at <= now or null with proper frequency conditions)
     $reports = ScheduledReport::where('active', true)
         ->where(function ($query) {
-            $query->whereNull('last_run_at')
-                ->orWhere(function ($q) {
-                    // Daily reports
-                    $q->where('frequency', 'daily')
-                        ->where('last_run_at', '<', now()->subDay());
-                })
-                ->orWhere(function ($q) {
-                    // Weekly reports (run on Mondays)
-                    $q->where('frequency', 'weekly')
-                        ->where('last_run_at', '<', now()->subWeek());
-                })
-                ->orWhere(function ($q) {
-                    // Monthly reports (run on 1st of month)
-                    $q->where('frequency', 'monthly')
-                        ->where('last_run_at', '<', now()->subMonth());
-                });
+            $query->whereNotNull('next_run_at')
+                ->where('next_run_at', '<=', now());
+        })
+        ->orWhere(function ($query) {
+            // First run: no next_run_at set yet
+            $query->where('active', true)
+                ->whereNull('next_run_at')
+                ->whereNull('last_sent_at');
         })
         ->get();
 
     foreach ($reports as $report) {
-        // Check if it's the right time based on frequency
-        $shouldRun = false;
+        // Dispatch the job to generate and send the report
+        GenerateScheduledReportJob::dispatch($report);
 
-        if ($report->frequency === 'daily') {
-            $shouldRun = true;
-        } elseif ($report->frequency === 'weekly' && now()->dayOfWeek === 1) {
-            $shouldRun = true;
-        } elseif ($report->frequency === 'monthly' && now()->day === 1) {
-            $shouldRun = true;
-        }
-
-        if ($shouldRun) {
-            GenerateScheduledReportJob::dispatch($report);
-        }
+        // Calculate and set next_run_at based on frequency and send_time
+        $nextRun = $report->calculateNextRun();
+        $report->update([
+            'last_sent_at' => now(),
+            'next_run_at' => $nextRun,
+        ]);
     }
-})->dailyAt('06:00')->name('scheduled-reports');
+})->everyMinute()->name('scheduled-reports');
+
+// Initialize next_run_at for reports that don't have it set (run once at startup)
+Schedule::call(function () {
+    ScheduledReport::where('active', true)
+        ->whereNull('next_run_at')
+        ->each(function ($report) {
+            $nextRun = $report->calculateNextRun();
+            if ($nextRun) {
+                $report->update(['next_run_at' => $nextRun]);
+            }
+        });
+})->dailyAt('00:00')->name('init-report-schedules');
