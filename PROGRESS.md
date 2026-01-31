@@ -1,368 +1,235 @@
-# VoIP Termination System - Progress Tracking
+# VoIP Termination System - Estado del Proyecto
 
-## Fase 1 - Core System (COMPLETADO)
+**Servidor:** sw1.tellmetelecom.com (165.22.130.17)
+**Repositorio:** github.com/canyoneiro/voip-termination-system
+**Última actualización:** 2026-01-31
 
-### Infraestructura
-- [x] Servidor Ubuntu configurado
-- [x] MariaDB instalado y configurado
-- [x] Redis instalado
-- [x] Nginx configurado con SSL
-- [x] PHP 8.3 instalado
-- [x] Kamailio instalado y configurado
+---
 
-### Panel Web
-- [x] Laravel 11 instalado
-- [x] Autenticacion de usuarios
-- [x] Dashboard principal
-- [x] CRUD Clientes
-- [x] CRUD Carriers
-- [x] Visor de CDRs
-- [x] Sistema de alertas
-- [x] Blacklist de IPs
-- [x] Webhooks
+## Estado Actual: ✅ PRODUCCIÓN
+
+El sistema está completamente operativo con todas las funcionalidades implementadas.
+
+### Servicios Activos
+| Servicio | Estado | Puerto |
+|----------|--------|--------|
+| Kamailio | ✅ | 5060/UDP |
+| MariaDB | ✅ | 3306 |
+| Redis | ✅ | 6379 |
+| Nginx + SSL | ✅ | 443 |
+| PHP-FPM 8.3 | ✅ | socket |
+| Supervisor | ✅ | - |
+| Fail2ban | ✅ | - |
+
+### Workers (Supervisor)
+- `voip-queue` (x2) - Procesamiento de jobs
+- `voip-scheduler` - Laravel scheduler
+- `voip-webhooks` - Envío de webhooks
+
+---
+
+## Funcionalidades Implementadas
+
+### Core SIP (Kamailio)
+- ✅ Autenticación por IP de clientes
+- ✅ Control de límites (CPS, canales, minutos)
+- ✅ Dispatcher con failover inteligente
+- ✅ Accounting completo a MariaDB
+- ✅ Monitoreo de carriers con OPTIONS
+- ✅ Detección de flood (>50 CPS = ban 1h)
+- ✅ Blacklist de IPs integrada
+
+### Panel Web (Laravel 11)
+- ✅ Dashboard en tiempo real
+- ✅ CRUD Clientes con IPs autorizadas
+- ✅ CRUD Carriers con monitoreo
+- ✅ Visor de CDRs con filtros
+- ✅ Trazas SIP con diagrama ladder
+- ✅ Sistema de alertas
+- ✅ Blacklist de IPs
+- ✅ Configuración del sistema
+
+### Funcionalidades Avanzadas
+- ✅ LCR (Least Cost Routing) con tarifas
+- ✅ QoS (calidad de servicio, MOS)
+- ✅ Reportes programados (email PDF/CSV)
+- ✅ Detección de fraude
+- ✅ Dialing Plans (restricción de destinos)
+- ✅ Normalización de números por cliente
+- ✅ Portal multi-tenant para clientes
 
 ### API REST
-- [x] Endpoints de clientes
-- [x] Endpoints de carriers
-- [x] Endpoints de CDRs
-- [x] Endpoints de estadisticas
-- [x] Endpoints de alertas
-- [x] Autenticacion por token
-- [x] Rate limiting
+- ✅ Endpoints completos documentados
+- ✅ Autenticación por token
+- ✅ Rate limiting
+- ✅ Webhooks para eventos
+- ✅ Swagger/OpenAPI en /api/documentation
 
-### Kamailio
-- [x] Autenticacion por IP
-- [x] Control de limites
-- [x] Dispatcher con failover
-- [x] Accounting a MariaDB
-- [x] Monitoreo con OPTIONS
-
-### GitHub
-- [x] Repositorio creado
-- [x] Codigo subido
-- [x] GitHub Actions configurado
+### Seguridad
+- ✅ Fail2ban con 5 jails activos
+- ✅ Sincronización fail2ban → BD → Telegram
+- ✅ Alertas por Telegram y Email
+- ✅ SSL/TLS con Let's Encrypt
 
 ---
 
-## Fase 2 - Funcionalidades Avanzadas (COMPLETADO)
+## Arquitectura
 
-### 1. LCR + Gestion de Tarifas (COMPLETADO)
-- [x] Migraciones de BD (destination_prefixes, carrier_rates, rate_plans, etc.)
-- [x] Modelos Eloquent
-- [x] LcrService con algoritmo de routing
-- [x] RateImportService para CSV
-- [x] API Controller
-- [x] Web Controller
-- [x] Vistas (dashboard, LCR test)
-- [x] Integracion con CDRs (billing calculation)
+```
+Clientes SIP
+     │
+     ▼
+┌─────────────┐
+│  Kamailio   │──── Redis (contadores, cache)
+│  (5060/UDP) │
+└─────────────┘
+     │
+     ├──── MariaDB (CDRs, config, alertas)
+     │
+     ▼
+┌─────────────┐
+│   Carriers  │
+└─────────────┘
 
-### 2. QoS - Quality of Service (COMPLETADO)
-- [x] Migraciones de BD (qos_metrics, qos_daily_stats)
-- [x] Modelos Eloquent
-- [x] QosService con calculo MOS
-- [x] ProcessQosMetricsJob
-- [x] CalculateQosDailyStatsJob
-- [x] API Controller
-- [x] Web Controller
-- [x] Vistas (dashboard QoS)
-- [x] Scheduler configurado
-
-### 3. Reportes Programados (COMPLETADO)
-- [x] Migraciones de BD (scheduled_reports, report_executions)
-- [x] Modelos Eloquent
-- [x] ReportGeneratorService
-- [x] GenerateScheduledReportJob
-- [x] ScheduledReportMail
-- [x] Templates de email
-- [x] API Controller
-- [x] Web Controller
-- [x] Vistas (CRUD reportes)
-- [x] Scheduler configurado
-
-### 4. Deteccion de Fraude (COMPLETADO)
-- [x] Migraciones de BD (fraud_rules, fraud_incidents)
-- [x] Modelos Eloquent
-- [x] FraudDetectionService
-- [x] AnalyzeFraudPatternsJob
-- [x] Seeder de reglas por defecto
-- [x] API Controller
-- [x] Web Controller
-- [x] Vistas (dashboard fraude, incidentes, reglas)
-- [x] Integracion con CDRs (analisis en tiempo real)
-- [x] Scheduler configurado (cada 5 min)
-
-### 5. Portal Multi-tenant (COMPLETADO)
-- [x] Migraciones de BD (customer_users, portal_settings, ip_requests)
-- [x] Modelos Eloquent
-- [x] Guard de autenticacion separado
-- [x] Middleware EnsureCustomerPortalEnabled
-- [x] Middleware CustomerTenantScope
-- [x] Controllers Portal (Login, Dashboard, CDRs, IPs, Profile)
-- [x] Vistas Portal completas
-- [x] Rutas portal.php
-
-### Integracion
-- [x] CdrObserver para disparar jobs automaticamente
-- [x] Navegacion actualizada con nuevas secciones
-- [x] Scheduler con todas las tareas programadas
-
-### Documentacion
-- [x] README.md actualizado
-- [x] PROGRESS.md creado
+Panel Web (Laravel) ◄──── Nginx (443) ◄──── Usuarios
+```
 
 ---
 
-## Fase 3 - Vistas CRUD Completas (COMPLETADO)
+## Archivos de Configuración
 
-### Tarifas / LCR
-- [x] Vista listado destinos
-- [x] Vista crear destino
-- [x] Vista editar destino
-- [x] Vista listado tarifas carrier
-- [x] Vista crear tarifa carrier
-- [x] Vista editar tarifa carrier
-- [x] Vista listado planes de tarifa
-- [x] Vista crear plan de tarifa
-- [x] Vista editar plan de tarifa
-- [x] Vista detalle plan de tarifa
-- [x] Vista importar tarifas CSV
+Todos los archivos de sistema están en `config/system/`:
 
-### Reportes
-- [x] Vista crear reporte programado
-- [x] Vista editar reporte programado
-- [x] Vista detalle reporte (historial ejecuciones)
-- [x] Vista detalle ejecucion
-
-### Fraude
-- [x] Vista crear regla de fraude
-- [x] Vista editar regla de fraude
-- [x] Vista detalle incidente
-- [x] Vista puntuaciones de riesgo
+```
+config/system/
+├── README.md                 # Guía de instalación
+├── crontab                   # Tareas programadas
+├── fail2ban/
+│   ├── voip.conf             # Jails
+│   ├── voip-blacklist.conf   # Acción custom
+│   ├── kamailio.conf         # Filtro SIP
+│   └── nginx-voip-login.conf # Filtro web
+├── kamailio/
+│   └── kamailio.cfg          # Config completa
+├── nginx/
+│   └── voip-panel.conf       # Sitio HTTPS
+├── scripts/
+│   ├── fail2ban-sync.sh      # Sync bans → BD
+│   └── sync-blacklist.sh     # Limpieza periódica
+└── supervisor/
+    └── voip-panel.conf       # Workers
+```
 
 ---
 
-## Fase 4 - Documentacion API (COMPLETADO)
+## Notificaciones
 
-### Swagger/OpenAPI
-- [x] Archivo api-docs.json generado
-- [x] Documentacion disponible en /api/documentation
-- [x] Todos los endpoints documentados
-- [x] Schemas de request/response
-- [x] Autenticacion Bearer documentada
+### Telegram
+- Bot: @tellmetelecom_bot
+- Admin chat_id: 592944152
+- Test: `php artisan notify:test-telegram`
 
----
-
-## Fase 5 - Dialing Plans (COMPLETADO)
-
-### Dialing Plans - Restriccion de Destinos por Cliente
-- [x] Migracion de BD (dialing_plans, dialing_plan_rules)
-- [x] Campo dialing_plan_id en customers
-- [x] Modelo DialingPlan
-- [x] Modelo DialingPlanRule
-- [x] Metodo isNumberAllowed() con wildcards
-- [x] Integracion en LcrService (checkDialingPlan)
-- [x] Metodo canDialNumber() en Customer
-- [x] DialingPlanController con CRUD completo
-- [x] Vista index (listado de planes)
-- [x] Vista create (crear plan)
-- [x] Vista edit (editar plan)
-- [x] Vista show (detalle con reglas)
-- [x] Gestion de reglas (add/edit/delete)
-- [x] Importar reglas desde texto
-- [x] Clonar dialing plan
-- [x] Test de numeros en vivo
-- [x] Selector de dialing plan en edicion de cliente
-- [x] Navegacion actualizada
+### Tipos de Alertas
+| Tipo | Severidad | Destinatario |
+|------|-----------|--------------|
+| carrier_down | critical | Admin |
+| carrier_recovered | info | Admin |
+| security_ip_blocked | warning | Admin |
+| security_flood_detected | critical | Admin |
+| minutes_warning (80%) | warning | Cliente |
+| minutes_exhausted | critical | Admin + Cliente |
+| cps_exceeded | warning | Admin + Cliente |
+| channels_exceeded | warning | Admin + Cliente |
 
 ---
 
-## Fase 6 - Normalizacion de Numeros (COMPLETADO)
+## Comandos Útiles
 
-### Normalizacion de Formato de Numeracion por Cliente
-- [x] Migracion de BD (number_format, default_country_code, strip_plus_sign, add_plus_sign)
-- [x] NumberNormalizationService con soporte para multiples paises
-- [x] Tres modos de operacion: Auto, Internacional E.164, Nacional Espana
-- [x] Integracion en LcrService (normaliza antes de enrutar)
-- [x] Metodo normalizeNumber() en Customer
-- [x] Vista de configuracion en edicion de cliente
-- [x] Panel de ayuda detallado con ejemplos
-- [x] Herramienta de prueba en vivo
-- [x] Soporte para 10 codigos de pais (ES, PT, FR, DE, UK, IT, US, MX, AR, CO)
-- [x] Opciones de formato de salida (strip +, add +)
+### Artisan
+```bash
+# Kamailio
+php artisan kamailio:sync          # Recargar módulos
+php artisan kamailio:status        # Ver estado
 
----
+# Notificaciones
+php artisan notify:test-telegram   # Test Telegram
 
-## Fase 7 - Integracion Kamailio y Documentacion (COMPLETADO)
+# Limpieza
+php artisan cleanup:all            # Limpiar datos antiguos
+php artisan blacklist:cleanup      # Limpiar IPs expiradas
+```
 
-### Observadores de Kamailio (Auto-Sync)
-- [x] KamailioAddress model para vista kamailio_address
-- [x] KamailioDispatcher model para vista kamailio_dispatcher
-- [x] CustomerIpObserver - recarga permissions al cambiar IPs
-- [x] CarrierObserver - recarga dispatcher al cambiar carriers
-- [x] Comando artisan kamailio:sync
-- [x] Metodos getCount() y reloadKamailio() en modelos
-- [x] Vistas MySQL auto-sincronizadas con tablas Laravel
+### Sistema
+```bash
+# Ver logs
+tail -f /var/www/voip-panel/storage/logs/laravel.log
+tail -f /var/log/syslog | grep kamailio
 
-### Seccion de Ayuda Integral
-- [x] HelpController con estadisticas del sistema
-- [x] Vista /help con documentacion completa
-- [x] Seccion Clientes (IPs, limites, estados)
-- [x] Seccion Carriers (conexion, codecs, prioridades)
-- [x] Seccion Tarifas/LCR (destinos, planes, busqueda)
-- [x] Seccion Prepago/Postpago (tipos de facturacion)
-- [x] Seccion Dialing Plans (restricciones, wildcards)
-- [x] Seccion Normalizacion (formatos, E.164, nacional)
-- [x] Seccion CDRs (registros, filtros, export)
-- [x] Seccion Alertas (tipos, severidades, acciones)
-- [x] Seccion Arquitectura (flujo Kamailio, vistas MySQL)
-- [x] Enlace de navegacion en sidebar
+# Servicios
+systemctl status kamailio mariadb redis nginx php8.3-fpm
 
----
+# Fail2ban
+fail2ban-client status
+fail2ban-client set kamailio banip 1.2.3.4
+fail2ban-client set kamailio unbanip 1.2.3.4
+```
 
-## Proximos Pasos (Opcional)
-
-### Mejoras Pendientes
-- [x] Tests unitarios (133 tests pasando)
-- [x] Tests de integracion (KamailioIntegrationTest - 11 tests)
-- [ ] Dashboard estadisticas con mas graficas
-
-### Ideas Futuras
-- [ ] 2FA para portal de clientes
-- [ ] Notificaciones push
-- [ ] Integracion con Slack
-- [ ] Dashboard mas interactivo con WebSockets
-- [ ] App movil para clientes
-- [ ] Multi-idioma (i18n)
+### Actualizar Sistema
+```bash
+cd /var/www/voip-panel
+git pull
+composer install --no-dev
+php artisan migrate --force
+php artisan config:cache
+php artisan queue:restart
+```
 
 ---
 
-## Registro de Cambios
+## Tests
 
-### 2026-01-31 (Auditoria y Correccion Critica de Alertas)
+```bash
+# Todos los tests
+php artisan test
 
-**PROBLEMA CRITICO DETECTADO Y RESUELTO:**
-Las alertas generadas por Kamailio NO se notificaban por Telegram/Email porque:
-1. Kamailio insertaba directamente con sql_query() - bypasseaba Eloquent
-2. AlertObserver nunca se ejecutaba
-3. SendAlertNotificationJob nunca se disparaba
+# Solo integración Kamailio
+php artisan test --filter=Kamailio
 
-**Soluciones implementadas:**
+# Resultado actual: 133 tests, 374 assertions ✅
+```
 
-1. **ProcessPendingAlertsJob** (NUEVO)
-   - Se ejecuta cada minuto via scheduler
-   - Busca alertas sin notificar (notified_telegram=false, notified_email=false)
-   - Dispara SendAlertNotificationJob para cada una
-   - Garantiza que TODAS las alertas de Kamailio se notifiquen
+---
 
-2. **SyncCarrierStatesJob** (NUEVO)
-   - Se ejecuta cada minuto via scheduler
-   - Consulta estado del dispatcher de Kamailio (kamcmd)
-   - Compara con tabla carriers y actualiza si hay cambios
-   - Dispara CarrierObserver para carrier_down/recovered
+## Historial de Cambios
 
-3. **CarrierObserver** (MEJORADO)
-   - Ahora crea alertas en BD para carrier_down y carrier_recovered
-   - Estas alertas pasan por AlertObserver
-   - Se envian notificaciones de email/Telegram
+### 2026-01-31
+- ✅ Corregido sistema de alertas (Kamailio → BD → Telegram/Email)
+- ✅ Integrado fail2ban con BD y notificaciones
+- ✅ Bot Telegram configurado (@tellmetelecom_bot)
+- ✅ Corregidos errores 500 en vistas QoS y Fraude
+- ✅ Añadidos archivos de sistema al repositorio
+- ✅ Documentación completa actualizada
 
-4. **Kamailio CHECK_LIMITS** (MEJORADO en /etc/kamailio/kamailio.cfg)
-   - Alertas de 80% para CPS (warning)
-   - Alertas de 80% para canales (warning)
-   - Alertas de 80% para minutos mensuales (warning)
-   - Alertas de 100% (critical) con tipo minutes_exhausted
-   - Severidad correcta: warning a 80%, critical a 100%
+### 2026-01-30
+- ✅ Observers para auto-sync con Kamailio
+- ✅ Sistema de normalización de números
+- ✅ Sección de ayuda integral
+- ✅ 133 tests pasando
 
-5. **Bot Telegram configurado**
-   - Bot: @tellmetelecom_bot
-   - Admin chat_id: 592944152
-   - Comando: php artisan notify:test-telegram
+### 2026-01-29
+- ✅ Dialing Plans implementados
+- ✅ API Swagger/OpenAPI
+- ✅ Vistas CRUD completas
+- ✅ Fase 2 completada (LCR, QoS, Fraude, Reportes, Portal)
 
-**Verificado funcionando:**
-- Alertas de Kamailio se notifican correctamente
-- Alertas de carrier_down/recovered se notifican
-- Scheduler ejecuta jobs cada minuto
-- Tests pasan (133 tests)
+---
 
-6. **Fail2ban Integration** (CORREGIDO)
-   - Accion custom: `/etc/fail2ban/action.d/voip-blacklist.conf`
-   - Script sync: `/opt/voip-scripts/fail2ban-sync.sh`
-   - Corregido SQL syntax para INSERT en ip_blacklist
-   - Jails configurados: kamailio, kamailio-aggressive, nginx-voip-login, nginx-botsearch
-   - IPs baneadas se insertan en ip_blacklist Y crean alerta
-   - Alertas de fail2ban se notifican por Telegram/Email
+## Datos del Sistema
 
-### 2026-01-31 (Correccion de Errores 500)
-- Corregido FraudController: relacion 'rule' cambiada a 'fraudRule'
-- Corregidas vistas de fraude (index, incidents, show): misma relacion
-- Corregido ScheduledReport::calculateNextRun(): metodo setTimeFromTimeString() no existia
-- Corregido calculo semanal: next() de Carbon reseteaba la hora
-- Corregido FraudDetectionService::checkOffHoursTraffic(): mismo problema setTimeFromTimeString
-- Creadas vistas QoS faltantes: qos/customer.blade.php y qos/carrier.blade.php
-- Agregados metodos getCustomerQos() y getCarrierQos() a QosService
-- Creada tabla failed_jobs (migracion ejecutada)
-- Marcadas migraciones huerfanas como ejecutadas (evita errores de "ya existe")
-- Limpieza de cache de Laravel completada
-
-### 2026-01-30 (Fase 7 - Integracion Kamailio y Ayuda)
-- Implementado sistema de Observers para auto-sincronizacion con Kamailio
-- KamailioAddress y KamailioDispatcher ahora son modelos para las vistas MySQL
-- CustomerIpObserver recarga automaticamente el modulo permissions
-- CarrierObserver recarga automaticamente el modulo dispatcher
-- Nuevo comando artisan kamailio:sync para sincronizacion manual
-- Seccion de Ayuda completa con documentacion para administradores
-- Documentacion de flujo de llamadas, arquitectura y mejores practicas
-- 133 tests pasando (11 de integracion Kamailio)
-
-### 2026-01-30 (Fase 6 - Normalizacion de Numeros)
-- Implementado sistema de normalizacion de numeros por cliente
-- Soporte para formato internacional E.164, nacional Espana y deteccion automatica
-- NumberNormalizationService con patrones para 10 paises
-- Integracion completa con LcrService
-- Panel de configuracion con ayuda detallada y ejemplos visuales
-- Herramienta de prueba de normalizacion en vivo
-
-### 2026-01-30 (Test Fixes)
-- Corregidos 11 tests fallidos en KamailioIntegrationTest
-- Agregado trait RefreshDatabase para aislamiento de tests
-- Agregada relacion rates() a modelo Carrier (CarrierRate)
-- Agregado alias rates() a modelo Customer (delegacion a customerRates)
-- Refactorizados tests para crear datos propios en setUp()
-- Total: 131 tests pasando, 12 tests de integracion Kamailio funcionando
-
-### 2026-01-29 (Fase 5)
-- Sistema de Dialing Plans implementado
-- Restriccion de destinos por cliente
-- Soporte para wildcards en patrones (34*, 346?)
-- Bloqueo automatico de destinos premium
-- Prioridades en reglas (FIFO)
-- Test de numeros en vivo
-- Integracion completa con LCR
-
-### 2026-01-29 (Fase 4)
-- Documentacion API Swagger/OpenAPI completa
-- api-docs.json con todos los endpoints
-- Disponible en /api/documentation
-
-### 2026-01-29 (Fase 3)
-- Vistas CRUD completas para Tarifas/LCR
-- Vistas CRUD completas para Reportes Programados
-- Vistas CRUD completas para Fraude
-- 17 nuevas vistas Blade
-- Sistema listo para produccion
-
-### 2025-01-29 (Fase 2)
-- Implementacion completa de Fase 2
-- 16 nuevas migraciones
-- 15 nuevos modelos
-- 5 nuevos servicios
-- 5 nuevos jobs
-- 9 nuevos controladores
-- 12+ nuevas vistas
-- Documentacion actualizada
-
-### Commits Principales
-- `feat: add Kamailio sync observers and comprehensive Help section`
-- `feat(customers): add number format normalization per customer`
-- `fix(tests): add RefreshDatabase trait and missing model relations`
-- `feat(views): Add complete CRUD views for rates, reports, and fraud modules`
-- `feat: Implement Phase 2 features - LCR, QoS, Reports, Fraud Detection, Multi-tenant Portal`
+| Métrica | Valor |
+|---------|-------|
+| Customers | 1 |
+| Carriers | 2 |
+| CDRs | 39 |
+| Tests | 133 ✅ |
+| Jails Fail2ban | 5 |
