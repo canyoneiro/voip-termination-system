@@ -1,5 +1,8 @@
 # VoIP Termination System
 
+[![CI](https://github.com/canyoneiro/voip-termination-system/actions/workflows/ci.yml/badge.svg)](https://github.com/canyoneiro/voip-termination-system/actions/workflows/ci.yml)
+[![Deploy](https://github.com/canyoneiro/voip-termination-system/actions/workflows/deploy.yml/badge.svg)](https://github.com/canyoneiro/voip-termination-system/actions/workflows/deploy.yml)
+
 Sistema completo de terminacion VoIP con panel de administracion, API REST y portal de clientes.
 
 ## Caracteristicas
@@ -102,14 +105,26 @@ chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 ```
 
-### 7. Configurar colas
+### 7. Configurar servicios del sistema
+
+Las configuraciones del sistema se encuentran en `config/system/`. Ver `config/system/README.md` para instrucciones detalladas.
 
 ```bash
-# Copiar configuracion de supervisor
-sudo cp /var/www/voip-panel/supervisor-worker.conf /etc/supervisor/conf.d/voip-worker.conf
-sudo supervisorctl reread
-sudo supervisorctl update
-sudo supervisorctl start voip-worker:*
+# Supervisor (queue workers)
+sudo cp config/system/supervisor/voip-panel.conf /etc/supervisor/conf.d/
+sudo supervisorctl reread && sudo supervisorctl update
+
+# Fail2ban
+sudo cp config/system/fail2ban/*.conf /etc/fail2ban/jail.d/
+sudo cp config/system/fail2ban/voip-blacklist.conf /etc/fail2ban/action.d/
+sudo systemctl restart fail2ban
+
+# Scripts
+sudo cp config/system/scripts/*.sh /opt/voip-scripts/
+sudo chmod +x /opt/voip-scripts/*.sh
+
+# Kamailio (si es nueva instalacion)
+sudo cp config/system/kamailio/kamailio.cfg /etc/kamailio/
 ```
 
 ### 8. Configurar scheduler
