@@ -3,8 +3,22 @@
 use App\Jobs\AnalyzeFraudPatternsJob;
 use App\Jobs\CalculateQosDailyStatsJob;
 use App\Jobs\GenerateScheduledReportJob;
+use App\Jobs\ProcessPendingAlertsJob;
+use App\Jobs\SyncCarrierStatesJob;
 use App\Models\ScheduledReport;
 use Illuminate\Support\Facades\Schedule;
+
+// CRITICAL: Process alerts from Kamailio that bypass Eloquent observers
+// This ensures all alerts get email/Telegram notifications
+Schedule::call(function () {
+    ProcessPendingAlertsJob::dispatch();
+})->everyMinute()->name('process-pending-alerts');
+
+// CRITICAL: Sync carrier states from Kamailio dispatcher to database
+// This ensures CarrierObserver gets triggered for carrier_down/recovered events
+Schedule::call(function () {
+    SyncCarrierStatesJob::dispatch();
+})->everyMinute()->name('sync-carrier-states');
 
 // Cleanup tasks
 Schedule::command('cleanup:all')->dailyAt('01:00');

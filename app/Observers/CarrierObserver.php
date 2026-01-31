@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\Alert;
 use App\Models\Carrier;
 use App\Models\KamailioDispatcher;
 use App\Services\WebhookService;
@@ -33,12 +34,60 @@ class CarrierObserver
 
             // Carrier went down
             if ($oldState === 'active' && in_array($newState, ['inactive', 'probing', 'disabled'])) {
-                $this->webhookService->carrierDown($carrier, "State changed from {$oldState} to {$newState}");
+                $reason = "State changed from {$oldState} to {$newState}";
+
+                // Create alert for carrier down
+                Alert::create([
+                    'type' => 'carrier_down',
+                    'severity' => 'critical',
+                    'source_type' => 'carrier',
+                    'source_id' => $carrier->id,
+                    'source_name' => $carrier->name,
+                    'title' => "Carrier down: {$carrier->name}",
+                    'message' => "Carrier {$carrier->name} ({$carrier->host}:{$carrier->port}) is now {$newState}. {$reason}",
+                    'metadata' => [
+                        'host' => $carrier->host,
+                        'port' => $carrier->port,
+                        'old_state' => $oldState,
+                        'new_state' => $newState,
+                    ],
+                ]);
+
+                // Also trigger webhook
+                $this->webhookService->carrierDown($carrier, $reason);
+
+                Log::warning("Carrier down: {$carrier->name}", [
+                    'carrier_id' => $carrier->id,
+                    'old_state' => $oldState,
+                    'new_state' => $newState,
+                ]);
             }
 
             // Carrier recovered
             if (in_array($oldState, ['inactive', 'probing', 'disabled']) && $newState === 'active') {
+                // Create alert for carrier recovered
+                Alert::create([
+                    'type' => 'carrier_recovered',
+                    'severity' => 'info',
+                    'source_type' => 'carrier',
+                    'source_id' => $carrier->id,
+                    'source_name' => $carrier->name,
+                    'title' => "Carrier recovered: {$carrier->name}",
+                    'message' => "Carrier {$carrier->name} ({$carrier->host}:{$carrier->port}) is now active again.",
+                    'metadata' => [
+                        'host' => $carrier->host,
+                        'port' => $carrier->port,
+                        'old_state' => $oldState,
+                    ],
+                ]);
+
+                // Also trigger webhook
                 $this->webhookService->carrierRecovered($carrier);
+
+                Log::info("Carrier recovered: {$carrier->name}", [
+                    'carrier_id' => $carrier->id,
+                    'old_state' => $oldState,
+                ]);
             }
         }
 
