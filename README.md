@@ -1,8 +1,5 @@
 # VoIP Termination System
 
-[![CI](https://github.com/canyoneiro/voip-termination-system/actions/workflows/ci.yml/badge.svg)](https://github.com/canyoneiro/voip-termination-system/actions/workflows/ci.yml)
-[![Deploy](https://github.com/canyoneiro/voip-termination-system/actions/workflows/deploy.yml/badge.svg)](https://github.com/canyoneiro/voip-termination-system/actions/workflows/deploy.yml)
-
 Sistema completo de terminacion VoIP con panel de administracion, API REST y portal de clientes.
 
 ## Caracteristicas
