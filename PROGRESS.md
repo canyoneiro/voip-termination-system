@@ -238,6 +238,51 @@
 
 ## Registro de Cambios
 
+### 2026-01-31 (Auditoria y Correccion Critica de Alertas)
+
+**PROBLEMA CRITICO DETECTADO Y RESUELTO:**
+Las alertas generadas por Kamailio NO se notificaban por Telegram/Email porque:
+1. Kamailio insertaba directamente con sql_query() - bypasseaba Eloquent
+2. AlertObserver nunca se ejecutaba
+3. SendAlertNotificationJob nunca se disparaba
+
+**Soluciones implementadas:**
+
+1. **ProcessPendingAlertsJob** (NUEVO)
+   - Se ejecuta cada minuto via scheduler
+   - Busca alertas sin notificar (notified_telegram=false, notified_email=false)
+   - Dispara SendAlertNotificationJob para cada una
+   - Garantiza que TODAS las alertas de Kamailio se notifiquen
+
+2. **SyncCarrierStatesJob** (NUEVO)
+   - Se ejecuta cada minuto via scheduler
+   - Consulta estado del dispatcher de Kamailio (kamcmd)
+   - Compara con tabla carriers y actualiza si hay cambios
+   - Dispara CarrierObserver para carrier_down/recovered
+
+3. **CarrierObserver** (MEJORADO)
+   - Ahora crea alertas en BD para carrier_down y carrier_recovered
+   - Estas alertas pasan por AlertObserver
+   - Se envian notificaciones de email/Telegram
+
+4. **Kamailio CHECK_LIMITS** (MEJORADO en /etc/kamailio/kamailio.cfg)
+   - Alertas de 80% para CPS (warning)
+   - Alertas de 80% para canales (warning)
+   - Alertas de 80% para minutos mensuales (warning)
+   - Alertas de 100% (critical) con tipo minutes_exhausted
+   - Severidad correcta: warning a 80%, critical a 100%
+
+5. **Bot Telegram configurado**
+   - Bot: @tellmetelecom_bot
+   - Admin chat_id: 592944152
+   - Comando: php artisan notify:test-telegram
+
+**Verificado funcionando:**
+- Alertas de Kamailio se notifican correctamente
+- Alertas de carrier_down/recovered se notifican
+- Scheduler ejecuta jobs cada minuto
+- Tests pasan (133 tests)
+
 ### 2026-01-31 (Correccion de Errores 500)
 - Corregido FraudController: relacion 'rule' cambiada a 'fraudRule'
 - Corregidas vistas de fraude (index, incidents, show): misma relacion
