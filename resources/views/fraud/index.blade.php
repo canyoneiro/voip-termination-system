@@ -129,7 +129,7 @@
                                 <tr>
                                     <td class="mono text-xs">{{ $incident->created_at->format('d/m H:i') }}</td>
                                     <td>
-                                        <span class="text-sm">{{ $incident->rule?->name ?? ucfirst(str_replace('_', ' ', $incident->type)) }}</span>
+                                        <span class="text-sm">{{ $incident->fraudRule?->name ?? ucfirst(str_replace('_', ' ', $incident->type)) }}</span>
                                     </td>
                                     <td>{{ $incident->customer?->name ?? '-' }}</td>
                                     <td>

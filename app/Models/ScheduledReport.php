@@ -99,23 +99,32 @@ class ScheduledReport extends Model
     {
         $now = now();
 
+        // Parse send_time (format "HH:MM" or "HH:MM:SS")
+        $timeParts = explode(':', $this->send_time ?? '00:00');
+        $hour = (int) ($timeParts[0] ?? 0);
+        $minute = (int) ($timeParts[1] ?? 0);
+        $second = (int) ($timeParts[2] ?? 0);
+
         switch ($this->frequency) {
             case 'daily':
-                $next = $now->copy()->setTimeFromTimeString($this->send_time);
+                $next = $now->copy()->setTime($hour, $minute, $second);
                 if ($next <= $now) {
                     $next->addDay();
                 }
                 return $next;
 
             case 'weekly':
+                // day_of_week: 0=Sunday, 1=Monday, etc.
+                $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                $dayName = $dayNames[$this->day_of_week] ?? 'Monday';
                 $next = $now->copy()
-                    ->setTimeFromTimeString($this->send_time)
-                    ->next($this->day_of_week);
+                    ->next($dayName)
+                    ->setTime($hour, $minute, $second);
                 return $next;
 
             case 'monthly':
                 $next = $now->copy()
-                    ->setTimeFromTimeString($this->send_time)
+                    ->setTime($hour, $minute, $second)
                     ->day(min($this->day_of_month, $now->daysInMonth));
                 if ($next <= $now) {
                     $next->addMonth();

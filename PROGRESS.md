@@ -238,6 +238,18 @@
 
 ## Registro de Cambios
 
+### 2026-01-31 (Correccion de Errores 500)
+- Corregido FraudController: relacion 'rule' cambiada a 'fraudRule'
+- Corregidas vistas de fraude (index, incidents, show): misma relacion
+- Corregido ScheduledReport::calculateNextRun(): metodo setTimeFromTimeString() no existia
+- Corregido calculo semanal: next() de Carbon reseteaba la hora
+- Corregido FraudDetectionService::checkOffHoursTraffic(): mismo problema setTimeFromTimeString
+- Creadas vistas QoS faltantes: qos/customer.blade.php y qos/carrier.blade.php
+- Agregados metodos getCustomerQos() y getCarrierQos() a QosService
+- Creada tabla failed_jobs (migracion ejecutada)
+- Marcadas migraciones huerfanas como ejecutadas (evita errores de "ya existe")
+- Limpieza de cache de Laravel completada
+
 ### 2026-01-30 (Fase 7 - Integracion Kamailio y Ayuda)
 - Implementado sistema de Observers para auto-sincronizacion con Kamailio
 - KamailioAddress y KamailioDispatcher ahora son modelos para las vistas MySQL

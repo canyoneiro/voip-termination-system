@@ -81,7 +81,7 @@
                             @forelse($incidents as $incident)
                                 <tr>
                                     <td class="mono text-xs">{{ $incident->created_at->format('Y-m-d H:i') }}</td>
-                                    <td>{{ $incident->rule?->name ?? ucfirst(str_replace('_', ' ', $incident->type)) }}</td>
+                                    <td>{{ $incident->fraudRule?->name ?? ucfirst(str_replace('_', ' ', $incident->type)) }}</td>
                                     <td>
                                         @if($incident->customer)
                                             <a href="{{ route('customers.show', $incident->customer) }}" class="text-blue-600 hover:text-blue-800">

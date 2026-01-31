@@ -56,7 +56,7 @@
                             </div>
                             <div>
                                 <p class="text-xs text-slate-500 uppercase tracking-wide">Regla</p>
-                                <p class="font-medium text-slate-800">{{ $incident->rule->name ?? 'Manual' }}</p>
+                                <p class="font-medium text-slate-800">{{ $incident->fraudRule?->name ?? 'Manual' }}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-slate-500 uppercase tracking-wide">Score de Riesgo</p>
@@ -177,8 +177,8 @@
                                     Ver Cliente
                                 </a>
                             @endif
-                            @if($incident->rule)
-                                <a href="{{ route('fraud.rules.edit', $incident->rule) }}" class="btn-secondary w-full text-sm text-center block">
+                            @if($incident->fraudRule)
+                                <a href="{{ route('fraud.rules.edit', $incident->fraudRule) }}" class="btn-secondary w-full text-sm text-center block">
                                     Editar Regla
                                 </a>
                             @endif

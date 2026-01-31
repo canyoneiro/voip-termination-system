@@ -252,6 +252,64 @@ class QosService
     }
 
     /**
+     * Get QoS metrics for a specific customer
+     */
+    public function getCustomerQos(int $customerId, int $days = 7): array
+    {
+        $from = now()->subDays($days);
+
+        $metrics = QosMetric::whereHas('cdr', fn($q) => $q->where('customer_id', $customerId))
+            ->where('created_at', '>=', $from)
+            ->selectRaw('
+                COUNT(*) as total_calls,
+                AVG(mos_score) as avg_mos,
+                MIN(mos_score) as min_mos,
+                MAX(mos_score) as max_mos,
+                AVG(pdd) as avg_pdd,
+                SUM(CASE WHEN quality_rating IN ("poor", "bad") THEN 1 ELSE 0 END) as poor_quality_count
+            ')
+            ->first();
+
+        return [
+            'total_calls' => $metrics->total_calls ?? 0,
+            'avg_mos' => $metrics->avg_mos ? round($metrics->avg_mos, 2) : 0,
+            'min_mos' => $metrics->min_mos ? round($metrics->min_mos, 2) : 0,
+            'max_mos' => $metrics->max_mos ? round($metrics->max_mos, 2) : 0,
+            'avg_pdd' => $metrics->avg_pdd ? (int) $metrics->avg_pdd : 0,
+            'poor_quality_count' => $metrics->poor_quality_count ?? 0,
+        ];
+    }
+
+    /**
+     * Get QoS metrics for a specific carrier
+     */
+    public function getCarrierQos(int $carrierId, int $days = 7): array
+    {
+        $from = now()->subDays($days);
+
+        $metrics = QosMetric::whereHas('cdr', fn($q) => $q->where('carrier_id', $carrierId))
+            ->where('created_at', '>=', $from)
+            ->selectRaw('
+                COUNT(*) as total_calls,
+                AVG(mos_score) as avg_mos,
+                MIN(mos_score) as min_mos,
+                MAX(mos_score) as max_mos,
+                AVG(pdd) as avg_pdd,
+                SUM(CASE WHEN quality_rating IN ("poor", "bad") THEN 1 ELSE 0 END) as poor_quality_count
+            ')
+            ->first();
+
+        return [
+            'total_calls' => $metrics->total_calls ?? 0,
+            'avg_mos' => $metrics->avg_mos ? round($metrics->avg_mos, 2) : 0,
+            'min_mos' => $metrics->min_mos ? round($metrics->min_mos, 2) : 0,
+            'max_mos' => $metrics->max_mos ? round($metrics->max_mos, 2) : 0,
+            'avg_pdd' => $metrics->avg_pdd ? (int) $metrics->avg_pdd : 0,
+            'poor_quality_count' => $metrics->poor_quality_count ?? 0,
+        ];
+    }
+
+    /**
      * Get QoS trends for a period
      */
     public function getTrends(string $from, string $to, string $granularity = 'hour'): array

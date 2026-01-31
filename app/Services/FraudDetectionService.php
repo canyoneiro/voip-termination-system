@@ -313,9 +313,13 @@ class FraudDetectionService
         $now = now();
         $isOffHours = false;
 
+        // Parse time strings (format "HH:MM")
+        $startParts = explode(':', $startTime);
+        $endParts = explode(':', $endTime);
+
         // Check if current time is in off-hours
-        $start = $now->copy()->setTimeFromTimeString($startTime);
-        $end = $now->copy()->setTimeFromTimeString($endTime);
+        $start = $now->copy()->setTime((int)$startParts[0], (int)($startParts[1] ?? 0), 0);
+        $end = $now->copy()->setTime((int)$endParts[0], (int)($endParts[1] ?? 0), 0);
 
         if ($start > $end) {
             // Spans midnight

@@ -33,7 +33,7 @@ class FraudController extends Controller
             ->toArray();
 
         // Recent incidents
-        $recentIncidents = FraudIncident::with('customer', 'rule')
+        $recentIncidents = FraudIncident::with('customer', 'fraudRule')
             ->orderByDesc('created_at')
             ->limit(20)
             ->get();
@@ -59,7 +59,7 @@ class FraudController extends Controller
 
     public function incidents(Request $request)
     {
-        $query = FraudIncident::with('customer', 'rule');
+        $query = FraudIncident::with('customer', 'fraudRule');
 
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
@@ -85,7 +85,7 @@ class FraudController extends Controller
 
     public function showIncident(FraudIncident $incident)
     {
-        $incident->load('customer', 'rule', 'cdr', 'resolvedBy');
+        $incident->load('customer', 'fraudRule', 'cdr', 'resolvedBy');
 
         // Related incidents (same customer, last 30 days)
         $relatedIncidents = FraudIncident::where('customer_id', $incident->customer_id)
