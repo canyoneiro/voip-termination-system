@@ -5,6 +5,9 @@ namespace Tests\Feature\Auth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * @group requires-vite
+ */
 class RegistrationTest extends TestCase
 {
     use RefreshDatabase;

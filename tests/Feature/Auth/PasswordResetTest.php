@@ -8,6 +8,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
+/**
+ * @group requires-vite
+ */
 class PasswordResetTest extends TestCase
 {
     use RefreshDatabase;

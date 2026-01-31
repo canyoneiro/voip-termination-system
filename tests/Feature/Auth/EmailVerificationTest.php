@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
+/**
+ * @group requires-vite
+ */
 class EmailVerificationTest extends TestCase
 {
     use RefreshDatabase;

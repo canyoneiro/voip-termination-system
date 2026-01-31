@@ -7,6 +7,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
+/**
+ * @group requires-vite
+ */
 class PasswordUpdateTest extends TestCase
 {
     use RefreshDatabase;
