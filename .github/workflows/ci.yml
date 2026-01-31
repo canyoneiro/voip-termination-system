@@ -11,15 +11,6 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: voip_test
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
       redis:
         image: redis:7
         ports:
@@ -59,14 +50,17 @@ jobs:
       - name: Configure test database
         run: |
           php artisan config:clear
-          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
-          sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env
-          sed -i 's/DB_DATABASE=.*/DB_DATABASE=voip_test/' .env
-          sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env
-          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=password/' .env
+          touch database/database.sqlite
+          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
+          sed -i 's|DB_DATABASE=.*|DB_DATABASE=database/database.sqlite|' .env
+          echo "REDIS_CLIENT=phpredis" >> .env
+          echo "REDIS_HOST=127.0.0.1" >> .env
 
       - name: Run migrations
         run: php artisan migrate --force
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
 
       - name: Run tests
         run: php artisan test --parallel
