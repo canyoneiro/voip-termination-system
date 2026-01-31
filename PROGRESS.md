@@ -283,6 +283,14 @@ Las alertas generadas por Kamailio NO se notificaban por Telegram/Email porque:
 - Scheduler ejecuta jobs cada minuto
 - Tests pasan (133 tests)
 
+6. **Fail2ban Integration** (CORREGIDO)
+   - Accion custom: `/etc/fail2ban/action.d/voip-blacklist.conf`
+   - Script sync: `/opt/voip-scripts/fail2ban-sync.sh`
+   - Corregido SQL syntax para INSERT en ip_blacklist
+   - Jails configurados: kamailio, kamailio-aggressive, nginx-voip-login, nginx-botsearch
+   - IPs baneadas se insertan en ip_blacklist Y crean alerta
+   - Alertas de fail2ban se notifican por Telegram/Email
+
 ### 2026-01-31 (Correccion de Errores 500)
 - Corregido FraudController: relacion 'rule' cambiada a 'fraudRule'
 - Corregidas vistas de fraude (index, incidents, show): misma relacion
