@@ -1,0 +1,2 @@
+* * * * * cd /var/www/voip-panel && php artisan schedule:run >> /dev/null 2>&1
+*/5 * * * * /opt/voip-scripts/sync-blacklist.sh >> /var/log/voip/sync-blacklist.log 2>&1
