@@ -124,13 +124,38 @@ class CarrierController extends Controller
     {
         $host = $carrier->host;
         $port = $carrier->port;
+        $transport = strtolower($carrier->transport);
 
-        // Send OPTIONS via Kamailio
-        $result = shell_exec("kamcmd tm.t_uac_dlg OPTIONS sip:{$host}:{$port} 2>&1");
+        // Send OPTIONS via sipsak
+        $transportFlag = $transport === 'tcp' ? '-T' : '';
+        $command = "timeout 5 sipsak -vv -s sip:ping@{$host}:{$port} {$transportFlag} 2>&1";
+        $result = shell_exec($command);
 
-        return response()->json([
-            'success' => true,
-            'result' => $result,
-        ]);
+        // Parse result to determine success
+        $success = str_contains($result ?? '', '200') || str_contains($result ?? '', 'SIP/2.0 200');
+        $statusMatch = [];
+        preg_match('/SIP\/2\.0 (\d{3})/', $result ?? '', $statusMatch);
+        $sipCode = $statusMatch[1] ?? null;
+
+        // Check for timeout
+        $timedOut = empty(trim($result ?? '')) || str_contains($result ?? '', 'timeout');
+
+        // Update carrier last_options_time if successful
+        if ($success) {
+            $carrier->update([
+                'last_options_time' => now(),
+                'last_options_reply' => (int) $sipCode,
+                'state' => 'active',
+            ]);
+            return back()->with('success', "OPTIONS OK - Respuesta: {$sipCode}. Carrier marcado como activo.");
+        } elseif ($timedOut) {
+            return back()->with('error', "OPTIONS timeout - El carrier no respondio en 5 segundos.");
+        } else {
+            $carrier->update([
+                'last_options_time' => now(),
+                'last_options_reply' => $sipCode ? (int) $sipCode : null,
+            ]);
+            return back()->with('error', "OPTIONS fallido - Respuesta: " . ($sipCode ?? 'Sin codigo SIP'));
+        }
     }
 }

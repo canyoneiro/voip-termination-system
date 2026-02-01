@@ -71,13 +71,13 @@
                                     <span class="font-medium text-slate-800">{{ $rate->carrier->name ?? 'N/A' }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="font-mono font-semibold text-slate-800">{{ $rate->prefix }}</span>
+                                    <span class="font-mono font-semibold text-slate-800">{{ $rate->destinationPrefix->prefix ?? '-' }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                                    {{ $rate->destination->description ?? $rate->destination->country ?? '-' }}
+                                    {{ $rate->destinationPrefix->description ?? $rate->destinationPrefix->country ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <span class="font-mono text-slate-800">${{ number_format($rate->rate_per_minute, 4) }}</span>
+                                    <span class="font-mono text-slate-800">${{ number_format($rate->cost_per_minute, 4) }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-slate-600">
                                     @if($rate->connection_fee > 0)

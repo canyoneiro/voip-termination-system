@@ -183,6 +183,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/action', [SystemController::class, 'action'])->name('action');
         Route::post('/kamailio', [SystemController::class, 'kamailioAction'])->name('kamailio');
         Route::post('/clear-cache', [SystemController::class, 'clearCache'])->name('clear-cache');
+        Route::post('/verify', [SystemController::class, 'verify'])->name('verify');
     });
 });
 

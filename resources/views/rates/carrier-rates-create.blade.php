@@ -38,20 +38,26 @@
                         </div>
 
                         <div>
-                            <label for="prefix" class="block text-sm font-medium text-slate-700 mb-1">Prefijo *</label>
-                            <input type="text" name="prefix" id="prefix" value="{{ old('prefix') }}" required
-                                   class="input-field w-full font-mono" placeholder="34, 346, 3460...">
-                            <p class="mt-1 text-xs text-slate-500">Prefijo de destino para esta tarifa</p>
+                            <label for="destination_prefix_id" class="block text-sm font-medium text-slate-700 mb-1">Destino *</label>
+                            <select name="destination_prefix_id" id="destination_prefix_id" required class="input-field w-full">
+                                <option value="">Seleccionar destino...</option>
+                                @foreach($destinations as $dest)
+                                    <option value="{{ $dest->id }}" {{ old('destination_prefix_id') == $dest->id ? 'selected' : '' }}>
+                                        {{ $dest->prefix }} - {{ $dest->description ?? $dest->country ?? 'Sin descripcion' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-slate-500">Selecciona el destino para esta tarifa</p>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="rate_per_minute" class="block text-sm font-medium text-slate-700 mb-1">Tarifa por minuto *</label>
+                                <label for="cost_per_minute" class="block text-sm font-medium text-slate-700 mb-1">Costo por minuto *</label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                                    <input type="number" name="rate_per_minute" id="rate_per_minute"
-                                           value="{{ old('rate_per_minute', '0.0000') }}" required
-                                           step="0.0001" min="0"
+                                    <input type="number" name="cost_per_minute" id="cost_per_minute"
+                                           value="{{ old('cost_per_minute', '0.0000') }}" required
+                                           step="0.000001" min="0"
                                            class="input-field w-full pl-7 font-mono">
                                 </div>
                             </div>
@@ -62,7 +68,7 @@
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                                     <input type="number" name="connection_fee" id="connection_fee"
                                            value="{{ old('connection_fee', '0.0000') }}"
-                                           step="0.0001" min="0"
+                                           step="0.000001" min="0"
                                            class="input-field w-full pl-7 font-mono">
                                 </div>
                             </div>
@@ -80,9 +86,9 @@
                             </div>
 
                             <div>
-                                <label for="minimum_duration" class="block text-sm font-medium text-slate-700 mb-1">Duracion minima (seg)</label>
-                                <input type="number" name="minimum_duration" id="minimum_duration"
-                                       value="{{ old('minimum_duration', '0') }}"
+                                <label for="min_duration" class="block text-sm font-medium text-slate-700 mb-1">Duracion minima (seg)</label>
+                                <input type="number" name="min_duration" id="min_duration"
+                                       value="{{ old('min_duration', '0') }}"
                                        min="0"
                                        class="input-field w-full">
                             </div>
@@ -90,9 +96,9 @@
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="effective_date" class="block text-sm font-medium text-slate-700 mb-1">Fecha efectiva</label>
+                                <label for="effective_date" class="block text-sm font-medium text-slate-700 mb-1">Fecha efectiva *</label>
                                 <input type="date" name="effective_date" id="effective_date"
-                                       value="{{ old('effective_date') }}"
+                                       value="{{ old('effective_date', date('Y-m-d')) }}" required
                                        class="input-field w-full">
                             </div>
 

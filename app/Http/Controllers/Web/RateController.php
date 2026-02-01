@@ -118,17 +118,17 @@ class RateController extends Controller
     // Carrier Rates
     public function carrierRates(Request $request)
     {
-        $query = CarrierRate::with(['carrier', 'destination']);
+        $query = CarrierRate::with(['carrier', 'destinationPrefix']);
 
         if ($request->filled('carrier_id')) {
             $query->where('carrier_id', $request->input('carrier_id'));
         }
 
         if ($request->filled('prefix')) {
-            $query->where('prefix', 'like', $request->input('prefix') . '%');
+            $query->whereHas('destinationPrefix', fn($q) => $q->where('prefix', 'like', $request->input('prefix') . '%'));
         }
 
-        $rates = $query->orderBy('prefix')->paginate(50);
+        $rates = $query->orderBy('destination_prefix_id')->paginate(50);
         $carriers = Carrier::orderBy('name')->get();
 
         return view('rates.carrier-rates', compact('rates', 'carriers'));
@@ -144,31 +144,39 @@ class RateController extends Controller
 
     public function storeCarrierRate(Request $request)
     {
-        $data = $request->validate([
+        $validated = $request->validate([
             'carrier_id' => 'required|exists:carriers,id',
-            'prefix' => 'required|string|max:20',
-            'rate_per_minute' => 'required|numeric|min:0',
+            'destination_prefix_id' => 'required|exists:destination_prefixes,id',
+            'cost_per_minute' => 'required|numeric|min:0',
             'connection_fee' => 'nullable|numeric|min:0',
             'billing_increment' => 'required|integer|min:1',
-            'minimum_duration' => 'nullable|integer|min:0',
-            'effective_date' => 'nullable|date',
+            'min_duration' => 'nullable|integer|min:0',
+            'effective_date' => 'required|date',
             'end_date' => 'nullable|date|after:effective_date',
             'active' => 'boolean',
         ]);
 
-        $data['active'] = $request->boolean('active', true);
-        $data['connection_fee'] = $data['connection_fee'] ?? 0;
-        $data['minimum_duration'] = $data['minimum_duration'] ?? 0;
+        $data = [
+            'carrier_id' => $validated['carrier_id'],
+            'destination_prefix_id' => $validated['destination_prefix_id'],
+            'cost_per_minute' => $validated['cost_per_minute'],
+            'connection_fee' => $validated['connection_fee'] ?? 0,
+            'billing_increment' => $validated['billing_increment'],
+            'min_duration' => $validated['min_duration'] ?? 0,
+            'effective_date' => $validated['effective_date'],
+            'end_date' => $validated['end_date'] ?? null,
+            'active' => $request->boolean('active', true),
+        ];
 
-        // Check for existing rate
+        // Check for existing active rate
         $exists = CarrierRate::where('carrier_id', $data['carrier_id'])
-            ->where('prefix', $data['prefix'])
+            ->where('destination_prefix_id', $data['destination_prefix_id'])
             ->where('active', true)
             ->exists();
 
         if ($exists) {
             return back()->withInput()
-                ->withErrors(['prefix' => 'Ya existe una tarifa activa para este carrier y prefijo.']);
+                ->withErrors(['destination_prefix_id' => 'Ya existe una tarifa activa para este carrier y destino.']);
         }
 
         CarrierRate::create($data);
@@ -186,19 +194,25 @@ class RateController extends Controller
 
     public function updateCarrierRate(Request $request, CarrierRate $rate)
     {
-        $data = $request->validate([
-            'rate_per_minute' => 'required|numeric|min:0',
+        $validated = $request->validate([
+            'cost_per_minute' => 'required|numeric|min:0',
             'connection_fee' => 'nullable|numeric|min:0',
             'billing_increment' => 'required|integer|min:1',
-            'minimum_duration' => 'nullable|integer|min:0',
-            'effective_date' => 'nullable|date',
+            'min_duration' => 'nullable|integer|min:0',
+            'effective_date' => 'required|date',
             'end_date' => 'nullable|date|after:effective_date',
             'active' => 'boolean',
         ]);
 
-        $data['active'] = $request->boolean('active', true);
-
-        $rate->update($data);
+        $rate->update([
+            'cost_per_minute' => $validated['cost_per_minute'],
+            'connection_fee' => $validated['connection_fee'] ?? 0,
+            'billing_increment' => $validated['billing_increment'],
+            'min_duration' => $validated['min_duration'] ?? 0,
+            'effective_date' => $validated['effective_date'],
+            'end_date' => $validated['end_date'] ?? null,
+            'active' => $request->boolean('active', true),
+        ]);
 
         return redirect()->route('rates.carrier-rates')
             ->with('success', 'Tarifa actualizada correctamente.');
@@ -302,9 +316,45 @@ class RateController extends Controller
 
         $number = $request->input('number');
         $customerId = $request->input('customer_id');
-        $customer = $customerId ? Customer::find($customerId) : null;
+        $customer = $customerId ? Customer::find($customerId) : Customer::first(); // Use first customer as fallback for testing
 
-        $result = $this->lcrService->selectCarrier($number, $customer);
+        if (!$customer) {
+            $customers = Customer::where('active', true)->orderBy('name')->get();
+            return view('rates.lcr-test', compact('customers', 'number'))
+                ->with('error', 'Se necesita al menos un cliente para hacer pruebas LCR.');
+        }
+
+        $lcrResult = $this->lcrService->selectCarrier($number, $customer);
+
+        // Transform result for view compatibility
+        if ($lcrResult === null) {
+            $result = [
+                'success' => false,
+                'message' => 'No se encontró ninguna ruta para este destino.',
+            ];
+        } elseif (isset($lcrResult['error']) && $lcrResult['error']) {
+            $result = [
+                'success' => false,
+                'message' => $lcrResult['message'] ?? $lcrResult['reason'] ?? 'Error desconocido',
+            ];
+        } else {
+            $result = [
+                'success' => true,
+                'destination' => [
+                    'prefix' => $lcrResult['prefix']->prefix ?? '-',
+                    'country' => $lcrResult['prefix']->country ?? '-',
+                    'description' => $lcrResult['prefix']->description ?? '-',
+                ],
+                'carrier' => [
+                    'name' => $lcrResult['carrier']->name ?? '-',
+                    'host' => $lcrResult['carrier']->host ?? '-',
+                    'priority' => $lcrResult['carrier']->priority ?? '-',
+                ],
+                'rate' => [
+                    'cost' => $lcrResult['cost_per_minute'] ?? 0,
+                ],
+            ];
+        }
 
         $customers = Customer::where('active', true)->orderBy('name')->get();
 

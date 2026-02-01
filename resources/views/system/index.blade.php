@@ -2,6 +2,13 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="text-2xl font-bold text-slate-800">Sistema</h2>
+            <div class="flex gap-2">
+                <a href="{{ route('system.logs') }}" class="btn-secondary text-sm">Ver Logs</a>
+                <form action="{{ route('system.verify') }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="btn-primary text-sm">Verificar Sistema</button>
+                </form>
+            </div>
         </div>
     </x-slot>
 
@@ -20,6 +27,49 @@
             @if(session('output'))
                 <div class="mb-4 p-4 bg-slate-100 border border-slate-200 rounded-lg">
                     <pre class="text-xs text-slate-700 overflow-x-auto whitespace-pre-wrap">{{ session('output') }}</pre>
+                </div>
+            @endif
+
+            @if(session('verification'))
+                @php $v = session('verification'); @endphp
+                <div class="mb-6 p-4 {{ $v['overall'] ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }} border rounded-lg">
+                    <h3 class="font-bold text-lg mb-3 {{ $v['overall'] ? 'text-green-800' : 'text-red-800' }}">
+                        {{ $v['overall'] ? '✓ Sistema OK' : '✗ Hay problemas' }}
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                        {{-- Services --}}
+                        @foreach($v['services'] as $svc => $info)
+                            <div class="flex items-center gap-2">
+                                <span class="{{ $info['ok'] ? 'text-green-600' : 'text-red-600' }}">{{ $info['ok'] ? '✓' : '✗' }}</span>
+                                <span class="text-slate-700">{{ $svc }}</span>
+                            </div>
+                        @endforeach
+                        {{-- Other checks --}}
+                        <div class="flex items-center gap-2">
+                            <span class="{{ $v['database']['ok'] ? 'text-green-600' : 'text-red-600' }}">{{ $v['database']['ok'] ? '✓' : '✗' }}</span>
+                            <span class="text-slate-700">DB: {{ $v['database']['message'] }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="{{ $v['redis']['ok'] ? 'text-green-600' : 'text-red-600' }}">{{ $v['redis']['ok'] ? '✓' : '✗' }}</span>
+                            <span class="text-slate-700">Redis: {{ $v['redis']['message'] }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="{{ $v['kamailio_rpc']['ok'] ? 'text-green-600' : 'text-red-600' }}">{{ $v['kamailio_rpc']['ok'] ? '✓' : '✗' }}</span>
+                            <span class="text-slate-700">Kamailio RPC: {{ $v['kamailio_rpc']['message'] }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="{{ $v['disk']['ok'] ? 'text-green-600' : 'text-red-600' }}">{{ $v['disk']['ok'] ? '✓' : '✗' }}</span>
+                            <span class="text-slate-700">Disco: {{ $v['disk']['message'] }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="{{ $v['queue']['ok'] ? 'text-green-600' : 'text-red-600' }}">{{ $v['queue']['ok'] ? '✓' : '✗' }}</span>
+                            <span class="text-slate-700">Queue: {{ $v['queue']['message'] }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="{{ $v['jobs']['ok'] ? 'text-green-600' : 'text-red-600' }}">{{ $v['jobs']['ok'] ? '✓' : '✗' }}</span>
+                            <span class="text-slate-700">Jobs: {{ $v['jobs']['message'] }}</span>
+                        </div>
+                    </div>
                 </div>
             @endif
 

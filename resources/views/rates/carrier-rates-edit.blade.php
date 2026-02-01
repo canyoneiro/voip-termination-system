@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-bold text-xl text-slate-800 leading-tight">
-                Editar Tarifa: <span class="font-mono">{{ $rate->carrier->name ?? 'N/A' }} - {{ $rate->prefix }}</span>
+                Editar Tarifa: <span class="font-mono">{{ $rate->carrier->name ?? 'N/A' }} - {{ $rate->destinationPrefix->prefix ?? 'N/A' }}</span>
             </h2>
             <a href="{{ route('rates.carrier-rates') }}" class="btn-secondary text-sm">Cancelar</a>
         </div>
@@ -32,19 +32,19 @@
                                 <div class="input-field w-full bg-slate-100">{{ $rate->carrier->name ?? 'N/A' }}</div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Prefijo</label>
-                                <div class="input-field w-full bg-slate-100 font-mono">{{ $rate->prefix }}</div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Destino</label>
+                                <div class="input-field w-full bg-slate-100 font-mono">{{ $rate->destinationPrefix->prefix ?? 'N/A' }} - {{ $rate->destinationPrefix->description ?? $rate->destinationPrefix->country ?? '' }}</div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="rate_per_minute" class="block text-sm font-medium text-slate-700 mb-1">Tarifa por minuto *</label>
+                                <label for="cost_per_minute" class="block text-sm font-medium text-slate-700 mb-1">Costo por minuto *</label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                                    <input type="number" name="rate_per_minute" id="rate_per_minute"
-                                           value="{{ old('rate_per_minute', $rate->rate_per_minute) }}" required
-                                           step="0.0001" min="0"
+                                    <input type="number" name="cost_per_minute" id="cost_per_minute"
+                                           value="{{ old('cost_per_minute', $rate->cost_per_minute) }}" required
+                                           step="0.000001" min="0"
                                            class="input-field w-full pl-7 font-mono">
                                 </div>
                             </div>
@@ -55,7 +55,7 @@
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                                     <input type="number" name="connection_fee" id="connection_fee"
                                            value="{{ old('connection_fee', $rate->connection_fee) }}"
-                                           step="0.0001" min="0"
+                                           step="0.000001" min="0"
                                            class="input-field w-full pl-7 font-mono">
                                 </div>
                             </div>
@@ -73,9 +73,9 @@
                             </div>
 
                             <div>
-                                <label for="minimum_duration" class="block text-sm font-medium text-slate-700 mb-1">Duracion minima (seg)</label>
-                                <input type="number" name="minimum_duration" id="minimum_duration"
-                                       value="{{ old('minimum_duration', $rate->minimum_duration) }}"
+                                <label for="min_duration" class="block text-sm font-medium text-slate-700 mb-1">Duracion minima (seg)</label>
+                                <input type="number" name="min_duration" id="min_duration"
+                                       value="{{ old('min_duration', $rate->min_duration) }}"
                                        min="0"
                                        class="input-field w-full">
                             </div>
@@ -83,9 +83,9 @@
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="effective_date" class="block text-sm font-medium text-slate-700 mb-1">Fecha efectiva</label>
+                                <label for="effective_date" class="block text-sm font-medium text-slate-700 mb-1">Fecha efectiva *</label>
                                 <input type="date" name="effective_date" id="effective_date"
-                                       value="{{ old('effective_date', $rate->effective_date?->format('Y-m-d')) }}"
+                                       value="{{ old('effective_date', $rate->effective_date?->format('Y-m-d')) }}" required
                                        class="input-field w-full">
                             </div>
 

@@ -34,7 +34,7 @@ class SystemController extends Controller
             'laravel' => storage_path('logs/laravel.log'),
             'nginx_access' => '/var/log/nginx/access.log',
             'nginx_error' => '/var/log/nginx/error.log',
-            'mysql' => '/var/log/mysql/error.log',
+            'mysql' => '/var/log/syslog',  // MySQL/MariaDB logs to syslog
             'php' => '/var/log/php8.3-fpm.log',
             'fail2ban' => '/var/log/fail2ban.log',
         ];
@@ -45,12 +45,23 @@ class SystemController extends Controller
         if (file_exists($logFile) && is_readable($logFile)) {
             if ($logType === 'kamailio') {
                 // For syslog, filter by kamailio
-                $cmd = "grep -i kamailio $logFile | tail -n $lines";
+                $cmd = "grep -i kamailio $logFile | grep -v DEBUG | tail -n $lines";
                 if (!empty($filter)) {
                     $filter = escapeshellarg($filter);
-                    $cmd = "grep -i kamailio $logFile | grep -i $filter | tail -n $lines";
+                    $cmd = "grep -i kamailio $logFile | grep -v DEBUG | grep -i $filter | tail -n $lines";
                 }
                 $logContent = shell_exec($cmd) ?? '';
+            } elseif ($logType === 'mysql') {
+                // MySQL/MariaDB logs to syslog
+                $cmd = "grep -iE 'mysql|mariadb' $logFile | tail -n $lines";
+                if (!empty($filter)) {
+                    $filter = escapeshellarg($filter);
+                    $cmd = "grep -iE 'mysql|mariadb' $logFile | grep -i $filter | tail -n $lines";
+                }
+                $logContent = shell_exec($cmd) ?? '';
+                if (empty(trim($logContent))) {
+                    $logContent = "No hay logs de MySQL/MariaDB recientes en syslog.";
+                }
             } else {
                 $cmd = "tail -n $lines $logFile";
                 if (!empty($filter)) {
@@ -202,10 +213,101 @@ class SystemController extends Controller
             return back()->with('success', "Kamailio configuration reloaded. Output: $output");
         }
 
+        // Special handling for PHP-FPM (restart in background to avoid killing current request)
+        if ($target === 'php8.3-fpm' && $action === 'restart') {
+            shell_exec('(sleep 1 && sudo /usr/bin/systemctl restart php8.3-fpm) > /dev/null 2>&1 &');
+            return back()->with('success', 'PHP-FPM se reiniciara en 1 segundo. Recarga la pagina en unos segundos.');
+        }
+
         $cmd = "sudo /usr/bin/systemctl $action $serviceName 2>&1";
         $output = shell_exec($cmd);
 
         return back()->with('success', "Executed: systemctl $action $serviceName")->with('output', $output ?: 'OK');
+    }
+
+    /**
+     * Run full system verification
+     */
+    public function verify()
+    {
+        $results = [];
+
+        // 1. Check services
+        $services = ['kamailio', 'mysql', 'nginx', 'redis-server', 'php8.3-fpm', 'fail2ban', 'supervisor'];
+        foreach ($services as $service) {
+            $status = trim(shell_exec("systemctl is-active $service 2>/dev/null") ?? 'unknown');
+            $results['services'][$service] = [
+                'status' => $status,
+                'ok' => $status === 'active',
+            ];
+        }
+
+        // 2. Check database connection
+        try {
+            DB::select('SELECT 1');
+            $results['database'] = ['ok' => true, 'message' => 'Conexion OK'];
+        } catch (\Exception $e) {
+            $results['database'] = ['ok' => false, 'message' => $e->getMessage()];
+        }
+
+        // 3. Check Redis connection
+        try {
+            Redis::ping();
+            $results['redis'] = ['ok' => true, 'message' => 'Conexion OK'];
+        } catch (\Exception $e) {
+            $results['redis'] = ['ok' => false, 'message' => $e->getMessage()];
+        }
+
+        // 4. Check Kamailio
+        $kamStatus = shell_exec('kamcmd core.uptime 2>&1');
+        $results['kamailio_rpc'] = [
+            'ok' => str_contains($kamStatus ?? '', 'uptime'),
+            'message' => $kamStatus ? 'RPC OK' : 'RPC no responde',
+        ];
+
+        // 5. Check disk space
+        $diskFree = disk_free_space('/');
+        $diskTotal = disk_total_space('/');
+        $diskPercent = round((($diskTotal - $diskFree) / $diskTotal) * 100, 1);
+        $results['disk'] = [
+            'ok' => $diskPercent < 90,
+            'message' => "Uso: {$diskPercent}%",
+        ];
+
+        // 6. Check queue workers
+        $queueStatus = shell_exec('sudo /usr/bin/supervisorctl status 2>&1');
+        $runningCount = substr_count($queueStatus ?? '', 'RUNNING');
+        $results['queue'] = [
+            'ok' => $runningCount >= 2,
+            'message' => $runningCount >= 2 ? "$runningCount workers activos" : 'Workers caidos',
+        ];
+
+        // 7. Check pending jobs
+        try {
+            $pendingJobs = DB::table('jobs')->count();
+            $failedJobs = DB::table('failed_jobs')->count();
+            $results['jobs'] = [
+                'ok' => $failedJobs == 0,
+                'message' => "Pendientes: $pendingJobs, Fallidos: $failedJobs",
+            ];
+        } catch (\Exception $e) {
+            $results['jobs'] = ['ok' => true, 'message' => 'Sin tabla jobs'];
+        }
+
+        // Calculate overall status
+        $allOk = true;
+        foreach ($results as $key => $result) {
+            if ($key === 'services') {
+                foreach ($result as $svc) {
+                    if (!$svc['ok']) $allOk = false;
+                }
+            } else {
+                if (!$result['ok']) $allOk = false;
+            }
+        }
+        $results['overall'] = $allOk;
+
+        return back()->with('verification', $results);
     }
 
     /**
