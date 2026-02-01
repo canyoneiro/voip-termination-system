@@ -88,11 +88,11 @@
                                         @if($cdr->sip_code == 200)
                                             <span class="badge badge-green">200 OK</span>
                                         @elseif($cdr->sip_code >= 400 && $cdr->sip_code < 500)
-                                            <span class="badge badge-yellow">{{ $cdr->sip_code }}</span>
+                                            <span class="badge badge-yellow">{{ $cdr->sip_code }} {{ Str::limit($cdr->sip_reason, 12) }}</span>
                                         @elseif($cdr->sip_code >= 500)
-                                            <span class="badge badge-red">{{ $cdr->sip_code }}</span>
+                                            <span class="badge badge-red">{{ $cdr->sip_code }} {{ Str::limit($cdr->sip_reason, 12) }}</span>
                                         @else
-                                            <span class="badge badge-gray">{{ $cdr->sip_code }}</span>
+                                            <span class="badge badge-gray">{{ $cdr->sip_code }} {{ Str::limit($cdr->sip_reason, 12) }}</span>
                                         @endif
                                     </td>
                                     <td>

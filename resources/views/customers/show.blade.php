@@ -270,9 +270,9 @@
                                     <td class="text-gray-400 text-sm">{{ $cdr->carrier->name ?? '-' }}</td>
                                     <td class="text-center">
                                         @if($cdr->answer_time)
-                                            <span class="badge badge-green">{{ $cdr->sip_code }}</span>
+                                            <span class="badge badge-green">{{ $cdr->sip_code }} {{ $cdr->sip_reason }}</span>
                                         @else
-                                            <span class="badge badge-red">{{ $cdr->sip_code }}</span>
+                                            <span class="badge badge-red">{{ $cdr->sip_code }} {{ Str::limit($cdr->sip_reason, 15) }}</span>
                                         @endif
                                     </td>
                                 </tr>
