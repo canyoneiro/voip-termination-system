@@ -2,7 +2,7 @@
 
 **Servidor:** sw1.tellmetelecom.com (165.22.130.17)
 **Repositorio:** github.com/canyoneiro/voip-termination-system
-**Última actualización:** 2026-01-31
+**Última actualización:** 2026-02-01
 
 ---
 
@@ -39,11 +39,19 @@ El sistema está completamente operativo con todas las funcionalidades implement
 - ✅ Detección de flood (>50 CPS = ban 1h)
 - ✅ Blacklist de IPs integrada
 
+### Sistema de Accounting (Precisión)
+- ✅ **PDD** (Post Dial Delay) con precisión de milisegundos
+- ✅ **Progress Time** - Timestamp del 180/183
+- ✅ **Ring Time** - Tiempo de timbrado (progress → answer)
+- ✅ **Billable Duration** - Tiempo facturable (answer → end)
+- ✅ **Customer Minutes** - Actualización automática
+- ✅ **Carrier Stats** - daily_calls, daily_minutes, daily_failed
+
 ### Panel Web (Laravel 11)
 - ✅ Dashboard en tiempo real
 - ✅ CRUD Clientes con IPs autorizadas
 - ✅ CRUD Carriers con monitoreo
-- ✅ Visor de CDRs con filtros
+- ✅ Visor de CDRs con filtros y métricas de tiempo
 - ✅ Trazas SIP con diagrama ladder
 - ✅ Sistema de alertas
 - ✅ Blacklist de IPs
@@ -73,6 +81,24 @@ El sistema está completamente operativo con todas las funcionalidades implement
 
 ---
 
+## Métricas de Llamada
+
+El sistema captura las siguientes métricas con precisión:
+
+| Métrica | Descripción | Precisión |
+|---------|-------------|-----------|
+| **PDD** | INVITE enviado → 180/183 recibido | Milisegundos |
+| **Ring Time** | 180/183 → 200 OK | Segundos |
+| **Billable Duration** | 200 OK → BYE | Segundos |
+| **Total Duration** | INVITE → BYE | Segundos |
+
+### Código de Colores en Vistas
+- 🟢 **Verde**: Tiempo facturable (billable)
+- 🟡 **Amarillo**: Tiempo de timbrado (ring)
+- 🟣 **Morado**: PDD
+
+---
+
 ## Arquitectura
 
 ```
@@ -80,7 +106,7 @@ Clientes SIP
      │
      ▼
 ┌─────────────┐
-│  Kamailio   │──── Redis (contadores, cache)
+│  Kamailio   │──── Redis (contadores, cache, PDD, progress)
 │  (5060/UDP) │
 └─────────────┘
      │
@@ -202,6 +228,19 @@ php artisan test --filter=Kamailio
 
 ## Historial de Cambios
 
+### 2026-02-01
+- ✅ **Accounting preciso**: PDD con milisegundos, progress_time, ring_time
+- ✅ Corregido cálculo de duración billable en Kamailio
+- ✅ Actualización automática de stats del carrier (daily_calls, daily_minutes, daily_failed)
+- ✅ Actualización automática de minutos del customer
+- ✅ Actualizadas 8 vistas web con métricas de tiempo:
+  - cdrs/index, cdrs/show
+  - customers/show, carriers/show
+  - qos/index, qos/customer, qos/carrier
+  - portal/cdrs/index
+- ✅ Código de colores: verde (billable), amarillo (ring), morado (PDD)
+- ✅ Accessors en modelo Cdr: ring_time, total_time
+
 ### 2026-01-31
 - ✅ Corregido sistema de alertas (Kamailio → BD → Telegram/Email)
 - ✅ Integrado fail2ban con BD y notificaciones
@@ -230,6 +269,7 @@ php artisan test --filter=Kamailio
 |---------|-------|
 | Customers | 1 |
 | Carriers | 2 |
-| CDRs | 39 |
+| CDRs | 47 |
+| SIP Traces | 700+ |
 | Tests | 133 ✅ |
 | Jails Fail2ban | 5 |
