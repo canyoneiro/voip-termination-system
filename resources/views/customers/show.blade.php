@@ -251,7 +251,9 @@
                                 <th class="text-left">Fecha/Hora</th>
                                 <th class="text-left">Origen</th>
                                 <th class="text-left">Destino</th>
-                                <th class="text-right">Duracion</th>
+                                <th class="text-right" title="Tiempo facturable">Billable</th>
+                                <th class="text-right" title="Tiempo de timbrado">Ring</th>
+                                <th class="text-right" title="Post Dial Delay">PDD</th>
                                 <th class="text-left">Carrier</th>
                                 <th class="text-center">Estado</th>
                             </tr>
@@ -262,7 +264,9 @@
                                     <td class="text-gray-400 text-sm">{{ $cdr->start_time->format('d/m H:i:s') }}</td>
                                     <td class="font-mono text-sm text-gray-300">{{ $cdr->caller }}</td>
                                     <td class="font-mono text-sm text-gray-300">{{ $cdr->callee }}</td>
-                                    <td class="text-right text-gray-400 text-sm">{{ gmdate('i:s', $cdr->duration) }}</td>
+                                    <td class="text-right text-green-400 text-sm">{{ gmdate('i:s', $cdr->billable_duration) }}</td>
+                                    <td class="text-right text-yellow-400 text-xs">{{ $cdr->ring_time ? $cdr->ring_time . 's' : '-' }}</td>
+                                    <td class="text-right text-purple-400 text-xs">{{ $cdr->pdd ? $cdr->pdd . 'ms' : '-' }}</td>
                                     <td class="text-gray-400 text-sm">{{ $cdr->carrier->name ?? '-' }}</td>
                                     <td class="text-center">
                                         @if($cdr->answer_time)
@@ -274,7 +278,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-8 text-gray-500">No hay llamadas registradas</td>
+                                    <td colspan="8" class="text-center py-8 text-gray-500">No hay llamadas registradas</td>
                                 </tr>
                             @endforelse
                         </tbody>

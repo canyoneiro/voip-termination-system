@@ -120,6 +120,7 @@
                                 <th>Fecha</th>
                                 <th>Cliente</th>
                                 <th>Carrier</th>
+                                <th>Duracion</th>
                                 <th>MOS</th>
                                 <th>PDD</th>
                                 <th>Codec</th>
@@ -132,10 +133,11 @@
                                     <td class="mono text-xs">{{ $metric->created_at->format('d/m H:i:s') }}</td>
                                     <td>{{ $metric->cdr?->customer?->name ?? '-' }}</td>
                                     <td>{{ $metric->cdr?->carrier?->name ?? '-' }}</td>
+                                    <td class="text-green-400">{{ $metric->cdr ? gmdate('i:s', $metric->cdr->billable_duration) : '-' }}</td>
                                     <td>
                                         <span class="badge badge-red">{{ number_format($metric->mos_score, 2) }}</span>
                                     </td>
-                                    <td>{{ $metric->pdd }} ms</td>
+                                    <td class="text-purple-400">{{ $metric->pdd }} ms</td>
                                     <td class="mono">{{ $metric->codec_used ?? '-' }}</td>
                                     <td>
                                         <span class="badge badge-{{ $metric->quality_rating === 'poor' ? 'yellow' : 'red' }}">
@@ -145,7 +147,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-slate-500 py-8">
+                                    <td colspan="8" class="text-center text-slate-500 py-8">
                                         No hay llamadas con calidad pobre en las ultimas 24h
                                     </td>
                                 </tr>

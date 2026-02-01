@@ -68,8 +68,9 @@
                                 <th>Fecha/Hora</th>
                                 <th>Origen</th>
                                 <th>Destino</th>
-                                <th>Duracion</th>
-                                <th>PDD</th>
+                                <th title="Tiempo facturable">Billable</th>
+                                <th title="Tiempo de timbrado">Ring</th>
+                                <th title="Post Dial Delay">PDD</th>
                                 <th>Codigo</th>
                                 <th>Acciones</th>
                             </tr>
@@ -80,8 +81,9 @@
                                     <td class="mono text-xs">{{ $cdr->start_time->format('Y-m-d H:i:s') }}</td>
                                     <td class="mono">{{ $cdr->caller }}</td>
                                     <td class="mono">{{ $cdr->callee }}</td>
-                                    <td>{{ gmdate('H:i:s', $cdr->duration) }}</td>
-                                    <td>{{ $cdr->pdd ? $cdr->pdd . 'ms' : '-' }}</td>
+                                    <td class="text-green-400">{{ gmdate('i:s', $cdr->billable_duration) }}</td>
+                                    <td class="text-yellow-400">{{ $cdr->ring_time ? $cdr->ring_time . 's' : '-' }}</td>
+                                    <td class="text-purple-400">{{ $cdr->pdd ? $cdr->pdd . 'ms' : '-' }}</td>
                                     <td>
                                         @if($cdr->sip_code == 200)
                                             <span class="badge badge-green">200 OK</span>
@@ -101,7 +103,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-slate-500 py-8">
+                                    <td colspan="8" class="text-center text-slate-500 py-8">
                                         No hay registros para los filtros seleccionados
                                     </td>
                                 </tr>

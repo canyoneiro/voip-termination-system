@@ -104,8 +104,9 @@
                                 <th class="text-left">Cliente</th>
                                 <th class="text-left">Origen</th>
                                 <th class="text-left">Destino</th>
-                                <th class="text-right w-20">Duracion</th>
-                                <th class="text-right w-20">PDD</th>
+                                <th class="text-right w-16" title="Tiempo facturable">Billable</th>
+                                <th class="text-right w-16" title="Tiempo de timbrado">Ring</th>
+                                <th class="text-right w-16" title="Post Dial Delay">PDD</th>
                                 <th class="text-left">Carrier</th>
                                 <th class="text-center w-24">Estado</th>
                                 <th class="text-right w-16"></th>
@@ -118,8 +119,9 @@
                                     <td class="text-gray-300 text-sm">{{ $cdr->customer->name ?? '-' }}</td>
                                     <td class="font-mono text-xs text-gray-300">{{ $cdr->caller }}</td>
                                     <td class="font-mono text-xs text-gray-300">{{ $cdr->callee }}</td>
-                                    <td class="text-right text-gray-400 text-sm">{{ gmdate('i:s', $cdr->duration) }}</td>
-                                    <td class="text-right text-gray-500 text-xs">{{ $cdr->pdd ? $cdr->pdd . 'ms' : '-' }}</td>
+                                    <td class="text-right text-green-400 text-sm font-medium">{{ gmdate('i:s', $cdr->billable_duration) }}</td>
+                                    <td class="text-right text-yellow-400 text-xs">{{ $cdr->ring_time ? $cdr->ring_time . 's' : '-' }}</td>
+                                    <td class="text-right text-purple-400 text-xs">{{ $cdr->pdd ? $cdr->pdd . 'ms' : '-' }}</td>
                                     <td class="text-gray-400 text-sm">{{ $cdr->carrier->name ?? '-' }}</td>
                                     <td class="text-center">
                                         @if($cdr->answer_time)
@@ -134,7 +136,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center py-12">
+                                    <td colspan="10" class="text-center py-12">
                                         <svg class="w-12 h-12 mx-auto text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                         <p class="text-gray-500">No se encontraron llamadas</p>
                                     </td>

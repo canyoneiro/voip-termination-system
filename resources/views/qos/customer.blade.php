@@ -57,6 +57,7 @@
                         <thead>
                             <tr>
                                 <th>Fecha</th>
+                                <th>Duracion</th>
                                 <th>MOS</th>
                                 <th>PDD</th>
                                 <th>Jitter</th>
@@ -69,12 +70,13 @@
                             @forelse($metrics as $metric)
                                 <tr>
                                     <td class="mono text-xs">{{ $metric->created_at->format('d/m H:i:s') }}</td>
+                                    <td class="text-green-400">{{ $metric->cdr ? gmdate('i:s', $metric->cdr->billable_duration) : '-' }}</td>
                                     <td>
                                         <span class="badge {{ $metric->mos_score >= 4 ? 'badge-green' : ($metric->mos_score >= 3 ? 'badge-yellow' : 'badge-red') }}">
                                             {{ number_format($metric->mos_score, 2) }}
                                         </span>
                                     </td>
-                                    <td>{{ $metric->pdd ?? '-' }} ms</td>
+                                    <td class="text-purple-400">{{ $metric->pdd ?? '-' }} ms</td>
                                     <td>{{ $metric->jitter ?? '-' }} ms</td>
                                     <td>{{ $metric->packet_loss ? number_format($metric->packet_loss, 2) . '%' : '-' }}</td>
                                     <td class="mono">{{ $metric->codec_used ?? '-' }}</td>
@@ -95,7 +97,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-slate-500 py-8">
+                                    <td colspan="8" class="text-center text-slate-500 py-8">
                                         No hay metricas disponibles para este cliente
                                     </td>
                                 </tr>

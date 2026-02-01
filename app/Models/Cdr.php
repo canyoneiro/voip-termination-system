@@ -113,4 +113,26 @@ class Cdr extends Model
         $seconds = $this->duration % 60;
         return sprintf('%d:%02d', $minutes, $seconds);
     }
+
+    /**
+     * Ring time in seconds (time from 180/183 to 200 OK)
+     */
+    public function getRingTimeAttribute(): ?int
+    {
+        if (!$this->progress_time || !$this->answer_time) {
+            return null;
+        }
+        return $this->answer_time->diffInSeconds($this->progress_time);
+    }
+
+    /**
+     * Total call time in seconds (from start to end)
+     */
+    public function getTotalTimeAttribute(): ?int
+    {
+        if (!$this->start_time || !$this->end_time) {
+            return null;
+        }
+        return $this->end_time->diffInSeconds($this->start_time);
+    }
 }
