@@ -234,6 +234,14 @@ php artisan test --filter=Kamailio
 - ✅ Auto-habilitación del probing al inicio de Kamailio (ExecStartPost)
 - ✅ TalkQ carrier ahora activo y respondiendo a OPTIONS (51.94.102.123:7447)
 - ✅ Ambos carriers operativos: TalkQ (prioridad 2) y TellmeSwitch (prioridad 5)
+- ✅ **Algoritmo dispatcher corregido**: Cambiado de 9 (weight) a 8 (priority-based)
+- ✅ **Failover robusto implementado**:
+  - Timeout INVITE: 15 segundos (antes 120s)
+  - Failover en: 408 timeout, 5xx, 6xx, 4xx (excepto user errors)
+  - `ds_mark_dst("ip")` marca carriers fallidos como inactivos
+  - Probing threshold: 2 fallos OPTIONS → estado probing (60s)
+  - Inactive threshold: 2 probes más → inactive (otros 60s)
+  - Recuperación automática cuando responde a OPTIONS
 
 ### 2026-02-01
 - ✅ **Accounting preciso**: PDD con milisegundos, progress_time, ring_time
