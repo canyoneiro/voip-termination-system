@@ -236,12 +236,14 @@ php artisan test --filter=Kamailio
 - ✅ Ambos carriers operativos: TalkQ (prioridad 2) y TellmeSwitch (prioridad 5)
 - ✅ **Algoritmo dispatcher corregido**: Cambiado de 9 (weight) a 8 (priority-based)
 - ✅ **Failover robusto implementado**:
-  - Timeout INVITE: 15 segundos (antes 120s)
-  - Failover en: 408 timeout, 5xx, 6xx, 4xx (excepto user errors)
-  - `ds_mark_dst("ip")` marca carriers fallidos como inactivos
-  - Probing threshold: 2 fallos OPTIONS → estado probing (60s)
-  - Inactive threshold: 2 probes más → inactive (otros 60s)
-  - Recuperación automática cuando responde a OPTIONS
+  - Timeout INVITE: **10 segundos**
+  - Failover en: cualquier error (4xx, 5xx, 6xx, timeout)
+  - Excepciones (no failover): 486 Busy, 487 Cancelled, 480 Unavailable
+  - Estado carrier controlado **solo por OPTIONS** (no por errores en llamadas)
+  - Probing threshold: 2 fallos OPTIONS → estado probing (~60s)
+  - Inactive threshold: 2 probes más → inactive (~120s total)
+  - Recuperación automática e inmediata cuando responde a OPTIONS
+- ✅ Documentación de failover añadida a sección de Ayuda del panel
 
 ### 2026-02-01
 - ✅ **Accounting preciso**: PDD con milisegundos, progress_time, ring_time

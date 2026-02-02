@@ -23,6 +23,7 @@
                 <div class="flex flex-wrap gap-2">
                     <a href="#clientes" class="px-3 py-1.5 bg-blue-500/20 text-blue-400 rounded-lg text-sm hover:bg-blue-500/30 transition-colors">Clientes</a>
                     <a href="#carriers" class="px-3 py-1.5 bg-green-500/20 text-green-400 rounded-lg text-sm hover:bg-green-500/30 transition-colors">Carriers</a>
+                    <a href="#failover" class="px-3 py-1.5 bg-indigo-500/20 text-indigo-400 rounded-lg text-sm hover:bg-indigo-500/30 transition-colors">Failover</a>
                     <a href="#tarifas" class="px-3 py-1.5 bg-yellow-500/20 text-yellow-400 rounded-lg text-sm hover:bg-yellow-500/30 transition-colors">Tarifas</a>
                     <a href="#prepago" class="px-3 py-1.5 bg-purple-500/20 text-purple-400 rounded-lg text-sm hover:bg-purple-500/30 transition-colors">Prepago/Postpago</a>
                     <a href="#dialing" class="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30 transition-colors">Planes de Marcacion</a>
@@ -193,6 +194,100 @@
                         <div class="text-2xl font-bold text-gray-400">Disabled</div>
                         <div class="text-xs text-gray-400">Deshabilitado manualmente</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Failover -->
+            <div id="failover" class="dark-card p-6 mb-6">
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Sistema de Failover y Monitoreo
+                </h2>
+
+                <div class="prose prose-invert max-w-none mb-6">
+                    <p class="text-gray-300">
+                        El sistema implementa <strong class="text-white">failover automatico</strong> entre carriers.
+                        Si un carrier falla, la llamada se enruta automaticamente al siguiente carrier disponible por prioridad.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white mb-3">Seleccion de Carrier</h3>
+                        <div class="p-4 bg-gray-800/50 rounded-lg">
+                            <p class="text-sm text-gray-300 mb-3">Las llamadas se enrutan por <strong class="text-white">prioridad</strong>:</p>
+                            <ul class="text-sm text-gray-400 space-y-2">
+                                <li class="flex items-center">
+                                    <span class="bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center mr-2">1</span>
+                                    <span>Carrier con <strong class="text-white">menor numero</strong> de prioridad = primero</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <span class="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center mr-2">2</span>
+                                    <span>Si falla, salta al siguiente por prioridad</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <span class="bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center mr-2">3</span>
+                                    <span>Continua hasta agotar carriers o exito</span>
+                                </li>
+                            </ul>
+                            <div class="mt-3 p-2 bg-indigo-900/30 border border-indigo-700/50 rounded text-xs text-indigo-300">
+                                <strong>Ejemplo:</strong> Carrier A (prioridad 1) → Carrier B (prioridad 2) → Carrier C (prioridad 5)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-white mb-3">Condiciones de Failover</h3>
+                        <div class="space-y-2">
+                            <div class="p-3 bg-red-900/30 border border-red-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-red-400">Timeout (10 segundos)</p>
+                                <p class="text-xs text-gray-400">Si el carrier no responde en 10s, salta al siguiente.</p>
+                            </div>
+                            <div class="p-3 bg-orange-900/30 border border-orange-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-orange-400">Error del Carrier (4xx, 5xx, 6xx)</p>
+                                <p class="text-xs text-gray-400">Cualquier error SIP del carrier activa failover.</p>
+                            </div>
+                            <div class="p-3 bg-gray-700/50 border border-gray-600 rounded-lg">
+                                <p class="text-sm font-semibold text-gray-300">Excepciones (NO failover)</p>
+                                <p class="text-xs text-gray-400">486 Ocupado, 487 Cancelado, 480 No disponible - son errores del usuario destino, no del carrier.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold text-white mb-3">Monitoreo de Carriers (OPTIONS)</h3>
+                    <div class="grid md:grid-cols-4 gap-4">
+                        <div class="p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-blue-400">30s</div>
+                            <div class="text-xs text-gray-400">Intervalo OPTIONS</div>
+                            <div class="text-xs text-gray-500 mt-1">Cada 30 segundos</div>
+                        </div>
+                        <div class="p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-yellow-400">2</div>
+                            <div class="text-xs text-gray-400">Fallos → Probing</div>
+                            <div class="text-xs text-gray-500 mt-1">~60 segundos</div>
+                        </div>
+                        <div class="p-4 bg-red-900/20 border border-red-700/30 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-red-400">+2</div>
+                            <div class="text-xs text-gray-400">Mas fallos → Inactive</div>
+                            <div class="text-xs text-gray-500 mt-1">~120 segundos total</div>
+                        </div>
+                        <div class="p-4 bg-green-900/20 border border-green-700/30 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-green-400">1</div>
+                            <div class="text-xs text-gray-400">Responde → Active</div>
+                            <div class="text-xs text-gray-500 mt-1">Recuperacion inmediata</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-indigo-900/20 border border-indigo-700/30 rounded-lg">
+                    <h4 class="text-sm font-semibold text-indigo-400 mb-2">Importante: Estado del Carrier</h4>
+                    <p class="text-sm text-gray-300">
+                        El estado del carrier (Active/Probing/Inactive) lo determina <strong class="text-white">unicamente el monitoreo OPTIONS</strong>.
+                        Los errores durante llamadas activan failover pero <strong class="text-white">no cambian el estado</strong> del carrier.
+                        Esto evita que errores puntuales marquen incorrectamente un carrier como caido.
+                    </p>
                 </div>
             </div>
 
