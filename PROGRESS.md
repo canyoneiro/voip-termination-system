@@ -2,7 +2,7 @@
 
 **Servidor:** sw1.tellmetelecom.com (165.22.130.17)
 **Repositorio:** github.com/canyoneiro/voip-termination-system
-**Última actualización:** 2026-02-01
+**Última actualización:** 2026-02-02
 
 ---
 
@@ -13,7 +13,7 @@ El sistema está completamente operativo con todas las funcionalidades implement
 ### Servicios Activos
 | Servicio | Estado | Puerto |
 |----------|--------|--------|
-| Kamailio | ✅ | 5060/UDP |
+| Kamailio | ✅ | 9060/UDP |
 | MariaDB | ✅ | 3306 |
 | Redis | ✅ | 6379 |
 | Nginx + SSL | ✅ | 443 |
@@ -227,6 +227,13 @@ php artisan test --filter=Kamailio
 ---
 
 ## Historial de Cambios
+
+### 2026-02-02
+- ✅ **Fix crítico dispatcher**: Carriers en estado 'probing' ahora incluidos en la vista `kamailio_dispatcher`
+- ✅ Corregido ciclo sin salida: probing carriers no recibían OPTIONS porque no estaban en dispatcher
+- ✅ Auto-habilitación del probing al inicio de Kamailio (ExecStartPost)
+- ✅ TalkQ carrier ahora activo y respondiendo a OPTIONS (51.94.102.123:7447)
+- ✅ Ambos carriers operativos: TalkQ (prioridad 2) y TellmeSwitch (prioridad 5)
 
 ### 2026-02-01
 - ✅ **Accounting preciso**: PDD con milisegundos, progress_time, ring_time
