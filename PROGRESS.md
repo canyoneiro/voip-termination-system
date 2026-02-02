@@ -183,6 +183,10 @@ php artisan notify:test-telegram   # Test Telegram
 # Limpieza
 php artisan cleanup:all            # Limpiar datos antiguos
 php artisan blacklist:cleanup      # Limpiar IPs expiradas
+php artisan calls:cleanup-stale    # Limpiar llamadas huérfanas
+
+# Stats
+php artisan stats:daily            # Calcular stats del día anterior
 ```
 
 ### Sistema
@@ -228,7 +232,23 @@ php artisan test --filter=Kamailio
 
 ## Historial de Cambios
 
-### 2026-02-02
+### 2026-02-02 (tarde)
+- ✅ **Auditoría completa del sistema** - 10 correcciones críticas
+- ✅ **Kamailio HTABLE**: Aumentado blacklist size de 256 a 1024 entradas
+- ✅ **Kamailio límites carrier**: Verifica max_channels/CPS antes de enviar llamadas
+- ✅ **Kamailio bug DECR**: Corregido contador negativo (verifica > 0 antes de decrementar)
+- ✅ **Kamailio dialog:end**: Implementado cleanup de llamadas huérfanas con CDR
+- ✅ **CleanupTraces**: Corregido nombre columna timestamp → time_stamp
+- ✅ **CdrController**: Corregido query SipTrace (callid, time_stamp)
+- ✅ **Telegram**: Escape de Markdown para evitar errores de parsing
+- ✅ **Invoice**: Comparación de fechas is_overdue mejorada
+- ✅ **CustomerRate**: Null check para billing_increment
+- ✅ **DialingPlanRule**: Regex de wildcards corregido
+- ✅ **Nuevo comando**: `php artisan calls:cleanup-stale` - limpia llamadas huérfanas
+- ✅ **API Rate Limiting**: Implementado con headers estándar X-RateLimit-*
+- ✅ **Scheduler**: Tarea cleanup cada 5 minutos
+
+### 2026-02-02 (mañana)
 - ✅ **Fix crítico dispatcher**: Carriers en estado 'probing' ahora incluidos en la vista `kamailio_dispatcher`
 - ✅ Corregido ciclo sin salida: probing carriers no recibían OPTIONS porque no estaban en dispatcher
 - ✅ Auto-habilitación del probing al inicio de Kamailio (ExecStartPost)
