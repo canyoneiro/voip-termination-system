@@ -53,8 +53,10 @@ class SyncCarrierStatesJob implements ShouldQueue
             // Map Kamailio flags to our states
             $newState = $this->mapKamailioState($kamState);
 
-            // Only update if state actually changed
-            if ($carrier->state !== $newState) {
+            // Check if state changed (for logging)
+            $stateChanged = $carrier->state !== $newState;
+
+            if ($stateChanged) {
                 Log::info("Carrier state change detected from Kamailio", [
                     'carrier_id' => $carrierId,
                     'carrier_name' => $carrier->name,
@@ -62,11 +64,20 @@ class SyncCarrierStatesJob implements ShouldQueue
                     'new_state' => $newState,
                     'kamailio_flags' => $kamState,
                 ]);
+            }
 
-                // Update via Eloquent to trigger CarrierObserver
+            // Always update last_options_time for active carriers responding to probing
+            // This fixes the bug where alerts were generated for healthy carriers
+            if ($newState === 'active') {
                 $carrier->update([
                     'state' => $newState,
                     'last_options_time' => now(),
+                    'last_options_reply' => 200,
+                ]);
+            } elseif ($stateChanged) {
+                // Only update state if it changed (for non-active states)
+                $carrier->update([
+                    'state' => $newState,
                 ]);
             }
         }

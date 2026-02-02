@@ -6,11 +6,18 @@ use App\Models\Alert;
 use App\Models\Carrier;
 use App\Models\KamailioDispatcher;
 use App\Services\WebhookService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class CarrierObserver
 {
     protected WebhookService $webhookService;
+
+    /**
+     * Minimum seconds between state change alerts for the same carrier.
+     * This prevents alert storms from transient state changes.
+     */
+    protected const STATE_CHANGE_DEBOUNCE_SECONDS = 30;
 
     public function __construct(WebhookService $webhookService)
     {
@@ -31,6 +38,26 @@ class CarrierObserver
         if ($carrier->isDirty('state')) {
             $oldState = $carrier->getOriginal('state');
             $newState = $carrier->state;
+
+            // Debounce: Skip alerts for rapid state changes (prevents alert storms)
+            $debounceKey = "carrier_state_change:{$carrier->id}";
+            $lastChange = Cache::get($debounceKey);
+
+            if ($lastChange && (now()->timestamp - $lastChange) < self::STATE_CHANGE_DEBOUNCE_SECONDS) {
+                Log::info("Carrier state change debounced (too rapid)", [
+                    'carrier_id' => $carrier->id,
+                    'carrier_name' => $carrier->name,
+                    'old_state' => $oldState,
+                    'new_state' => $newState,
+                    'seconds_since_last' => now()->timestamp - $lastChange,
+                ]);
+                // Still sync to Kamailio, but don't create alerts
+                $this->syncToKamailio($carrier, 'updated');
+                return;
+            }
+
+            // Record this state change time
+            Cache::put($debounceKey, now()->timestamp, self::STATE_CHANGE_DEBOUNCE_SECONDS * 2);
 
             // Carrier went down
             if ($oldState === 'active' && in_array($newState, ['inactive', 'probing', 'disabled'])) {
