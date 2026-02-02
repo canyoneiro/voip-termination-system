@@ -49,12 +49,11 @@ class CarrierController extends Controller
         $validated['probing_enabled'] = $request->boolean('probing_enabled');
         $carrier = Carrier::create($validated);
 
-        // Reload Kamailio dispatcher
-        exec('kamcmd dispatcher.reload 2>/dev/null');
+        // Observer handles Kamailio reload automatically
 
         return redirect()
             ->route('carriers.show', $carrier)
-            ->with('success', 'Carrier created successfully');
+            ->with('success', 'Carrier created successfully. Kamailio synced.');
     }
 
     public function show(Carrier $carrier)
@@ -100,24 +99,22 @@ class CarrierController extends Controller
         $validated['probing_enabled'] = $request->boolean('probing_enabled');
         $carrier->update($validated);
 
-        // Reload Kamailio dispatcher
-        exec('kamcmd dispatcher.reload 2>/dev/null');
+        // Observer handles Kamailio reload automatically
 
         return redirect()
             ->route('carriers.show', $carrier)
-            ->with('success', 'Carrier updated successfully');
+            ->with('success', 'Carrier updated successfully. Kamailio synced.');
     }
 
     public function destroy(Carrier $carrier)
     {
         $carrier->delete();
 
-        // Reload Kamailio dispatcher
-        exec('kamcmd dispatcher.reload 2>/dev/null');
+        // Observer handles Kamailio reload automatically
 
         return redirect()
             ->route('carriers.index')
-            ->with('success', 'Carrier deleted successfully');
+            ->with('success', 'Carrier deleted successfully. Kamailio synced.');
     }
 
     public function test(Carrier $carrier)
