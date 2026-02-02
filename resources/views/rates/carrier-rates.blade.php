@@ -13,6 +13,17 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Aviso importante -->
+            <div class="mb-4 p-3 bg-slate-100 border-l-4 border-slate-400 rounded-r-lg flex items-center">
+                <svg class="w-5 h-5 text-slate-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-slate-600 text-sm">
+                    Estas tarifas son para <strong>calcular costos</strong> en los CDRs, no controlan el enrutamiento.
+                    El enrutamiento se configura en <a href="{{ route('carriers.index') }}" class="text-blue-600 underline">Carriers</a> (por prioridad).
+                </span>
+            </div>
+
             @if(session('success'))
                 <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg">
                     {{ session('success') }}

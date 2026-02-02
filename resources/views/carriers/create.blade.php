@@ -48,22 +48,30 @@
                         </div>
                     </div>
 
-                    <!-- Prioridad y Peso -->
+                    <!-- Prioridad y Peso - CONTROLA EL ENRUTAMIENTO -->
                     <div class="mb-8">
-                        <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">Prioridad y Balanceo</h3>
-                        <p class="text-xs text-gray-500 mb-4">Configura como se enrutaran las llamadas entre los carriers disponibles.</p>
+                        <h3 class="text-sm font-semibold text-white mb-4 pb-2 border-b border-gray-700/50">
+                            Prioridad de Enrutamiento
+                            <span class="ml-2 px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full">Controla el enrutamiento</span>
+                        </h3>
+                        <div class="p-3 bg-green-500/10 border border-green-500/20 rounded-lg mb-4">
+                            <p class="text-sm text-green-300">
+                                <strong class="text-green-400">La prioridad determina por cual carrier salen las llamadas.</strong>
+                                El carrier con <strong>MAYOR numero</strong> de prioridad se usa primero. Si falla, se usa el siguiente.
+                            </p>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="priority" class="block text-sm font-medium text-gray-300">Prioridad *</label>
-                                <input type="number" name="priority" id="priority" required min="1" max="100" value="{{ old('priority', 1) }}"
+                                <input type="number" name="priority" id="priority" required min="1" max="100" value="{{ old('priority', 10) }}"
                                     class="dark-input mt-1 w-full py-2 px-3">
-                                <p class="mt-1 text-xs text-gray-500">Menor numero = mayor prioridad (1 es el mas prioritario)</p>
+                                <p class="mt-1 text-xs text-green-400 font-medium">Mayor numero = se usa primero (ej: 10 antes que 5)</p>
                             </div>
                             <div>
                                 <label for="weight" class="block text-sm font-medium text-gray-300">Peso *</label>
                                 <input type="number" name="weight" id="weight" required min="1" max="100" value="{{ old('weight', 100) }}"
                                     class="dark-input mt-1 w-full py-2 px-3">
-                                <p class="mt-1 text-xs text-gray-500">Para balanceo entre carriers de misma prioridad</p>
+                                <p class="mt-1 text-xs text-gray-500">Para balanceo entre carriers de igual prioridad</p>
                             </div>
                         </div>
                     </div>

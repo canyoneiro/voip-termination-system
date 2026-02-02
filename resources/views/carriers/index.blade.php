@@ -14,6 +14,22 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Info de Enrutamiento -->
+            <div class="mb-4 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-slate-700">
+                            <strong class="text-slate-900">El enrutamiento se hace por PRIORIDAD</strong> -
+                            Mayor numero = se usa primero. Columna "Prior." define el orden.
+                        </span>
+                    </div>
+                    <a href="{{ route('help') }}#failover" class="text-sm text-blue-600 hover:text-blue-800">Ver documentacion</a>
+                </div>
+            </div>
+
             @if(session('success'))
                 <div class="mb-4 p-4 rounded-lg bg-green-50 border border-green-200 text-green-700">
                     {{ session('success') }}

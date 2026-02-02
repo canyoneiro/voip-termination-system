@@ -295,13 +295,36 @@
             <div id="tarifas" class="dark-card p-6 mb-6">
                 <h2 class="text-xl font-bold text-white mb-4 flex items-center">
                     <svg class="w-6 h-6 mr-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Sistema de Tarifas (LCR)
+                    Sistema de Tarifas (Facturacion)
                 </h2>
+
+                <!-- AVISO MUY IMPORTANTE -->
+                <div class="mb-6 p-4 bg-amber-500/20 border-2 border-amber-500/50 rounded-lg">
+                    <div class="flex items-start">
+                        <svg class="w-8 h-8 text-amber-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <h3 class="text-lg font-bold text-amber-300">MUY IMPORTANTE: Tarifas vs Enrutamiento</h3>
+                            <p class="text-amber-200 mt-2 text-base">
+                                <strong>Las tarifas son SOLO para facturacion</strong> - calculan el costo y precio de las llamadas en los CDRs.
+                            </p>
+                            <p class="text-amber-200/80 mt-2">
+                                <strong>El enrutamiento se controla con la PRIORIDAD del carrier</strong> (en la seccion Carriers).
+                                El carrier con <strong>MAYOR numero de prioridad</strong> se usa primero.
+                            </p>
+                            <p class="text-amber-200/60 mt-2 text-sm">
+                                Ejemplo: Si TalkQ tiene prioridad 10 y TellmeSwitch tiene prioridad 5, las llamadas iran a TalkQ primero,
+                                independientemente de cual sea mas barato.
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="prose prose-invert max-w-none mb-6">
                     <p class="text-gray-300">
-                        El sistema soporta enrutamiento por <strong class="text-white">Least Cost Routing (LCR)</strong>.
-                        Cada destino puede tener tarifas diferentes por carrier, y el sistema selecciona el mas economico.
+                        El sistema de tarifas permite definir <strong class="text-white">costos por destino</strong> para calcular
+                        el costo de cada llamada y el precio a cobrar al cliente.
                     </p>
                 </div>
 
@@ -327,7 +350,7 @@
                             <li>• Incremento de facturacion (ej: 6 seg)</li>
                             <li>• Duracion minima</li>
                         </ul>
-                        <p class="text-xs text-green-400 mt-2">LCR elige el carrier mas barato.</p>
+                        <p class="text-xs text-yellow-400 mt-2">Se usa para calcular el coste en los CDRs.</p>
                     </div>
 
                     <div class="p-4 bg-gray-800/50 rounded-lg">

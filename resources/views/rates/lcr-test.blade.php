@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-bold text-xl text-slate-800 leading-tight">
-                Test de LCR
+                Calculadora de Costos
             </h2>
             <a href="{{ route('rates.index') }}" class="btn-secondary text-sm">Volver</a>
         </div>
@@ -10,8 +10,27 @@
 
     <div class="py-6">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- AVISO IMPORTANTE -->
+            <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+                <div class="flex items-start">
+                    <svg class="w-6 h-6 text-blue-500 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold text-blue-800">Esta herramienta es solo informativa</h3>
+                        <p class="text-blue-700 text-sm mt-1">
+                            Muestra el <strong>costo y precio</strong> que se aplicaria a una llamada, pero <strong>NO determina el enrutamiento</strong>.
+                        </p>
+                        <p class="text-blue-600 text-sm mt-1">
+                            Las llamadas se enrutan por <strong>prioridad del carrier</strong>, no por costo.
+                            Para cambiar por donde salen las llamadas, ajusta las prioridades en <a href="{{ route('carriers.index') }}" class="underline font-medium">Carriers</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div class="dark-card p-6 mb-6">
-                <h3 class="font-semibold text-slate-800 mb-4">Consultar Ruta LCR</h3>
+                <h3 class="font-semibold text-slate-800 mb-4">Consultar Costo por Destino</h3>
                 <form method="POST" action="{{ route('rates.lcr-lookup') }}" class="space-y-4">
                     @csrf
                     <div>
