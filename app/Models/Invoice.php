@@ -93,7 +93,7 @@ class Invoice extends Model
 
     public function getIsOverdueAttribute(): bool
     {
-        return $this->status !== 'paid' && $this->due_date < now();
+        return $this->status !== 'paid' && $this->due_date && $this->due_date->endOfDay()->isPast();
     }
 
     public function getStatusColorAttribute(): string

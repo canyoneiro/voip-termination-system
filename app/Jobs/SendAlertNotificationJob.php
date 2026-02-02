@@ -201,24 +201,46 @@ class SendAlertNotificationJob implements ShouldQueue
 
         $typeLabel = str_replace('_', ' ', ucwords($this->alert->type, '_'));
 
-        $message = "{$severityEmoji} *{$this->alert->title}*\n\n";
+        // Escape user-provided content to prevent Markdown parsing errors
+        $title = $this->escapeMarkdown($this->alert->title);
+        $alertMessage = $this->escapeMarkdown($this->alert->message);
+        $sourceName = $this->alert->source_name ? $this->escapeMarkdown($this->alert->source_name) : null;
+
+        $message = "{$severityEmoji} *{$title}*\n\n";
         $message .= "📋 *Tipo:* {$typeLabel}\n";
         $message .= "⏰ *Hora:* {$this->alert->created_at->format('d/m/Y H:i:s')}\n";
 
-        if ($this->alert->source_name) {
-            $message .= "🎯 *Origen:* {$this->alert->source_name}\n";
+        if ($sourceName) {
+            $message .= "🎯 *Origen:* {$sourceName}\n";
         }
 
-        $message .= "\n{$this->alert->message}";
+        $message .= "\n{$alertMessage}";
 
         if ($this->alert->metadata) {
             $message .= "\n\n📎 *Detalles:*\n";
             foreach ($this->alert->metadata as $key => $value) {
-                $displayValue = is_array($value) ? json_encode($value) : $value;
-                $message .= "• {$key}: `{$displayValue}`\n";
+                $displayValue = is_array($value) ? json_encode($value) : (string) $value;
+                $escapedValue = $this->escapeMarkdown($displayValue);
+                $message .= "• {$key}: {$escapedValue}\n";
             }
         }
 
         return $message;
+    }
+
+    /**
+     * Escape special Markdown characters to prevent Telegram API parsing errors
+     */
+    protected function escapeMarkdown(string $text): string
+    {
+        // Characters that need escaping in Telegram Markdown: _ * [ ] ( ) ~ ` > # + - = | { } . !
+        // We only escape the most common problematic ones
+        $specialChars = ['_', '*', '[', ']', '(', ')', '`', '~'];
+
+        foreach ($specialChars as $char) {
+            $text = str_replace($char, '\\' . $char, $text);
+        }
+
+        return $text;
     }
 }

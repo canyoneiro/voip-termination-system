@@ -23,6 +23,7 @@ Schedule::call(function () {
 // Cleanup tasks
 Schedule::command('cleanup:all')->dailyAt('01:00');
 Schedule::command('blacklist:cleanup')->hourly();
+Schedule::command('calls:cleanup-stale')->everyFiveMinutes()->name('cleanup-stale-calls');
 
 // Statistics
 Schedule::command('stats:daily')->dailyAt('00:05');

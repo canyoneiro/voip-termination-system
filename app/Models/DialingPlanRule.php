@@ -40,11 +40,12 @@ class DialingPlanRule extends Model
             return true;
         }
 
-        // Wildcard match with *
-        if (str_contains($pattern, '*')) {
-            $regex = '/^' . str_replace(['*', '?'], ['.*', '.'], preg_quote($pattern, '/')) . '$/';
-            $regex = str_replace('\.\*', '.*', $regex);
-            $regex = str_replace('\.', '.', $regex);
+        // Wildcard match with * or ?
+        if (str_contains($pattern, '*') || str_contains($pattern, '?')) {
+            // First escape special regex chars, then convert wildcards
+            $escaped = preg_quote($pattern, '/');
+            // Convert escaped wildcards to regex patterns
+            $regex = '/^' . str_replace(['\*', '\?'], ['.*', '.'], $escaped) . '$/';
             return (bool) preg_match($regex, $number);
         }
 

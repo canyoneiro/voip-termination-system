@@ -79,8 +79,8 @@ class CdrController extends BaseApiController
             return $this->notFound('CDR not found');
         }
 
-        $traces = SipTrace::where('call_id', $cdr->call_id)
-            ->orderBy('timestamp')
+        $traces = SipTrace::where('callid', $cdr->call_id)
+            ->orderBy('time_stamp')
             ->get();
 
         return $this->success($traces);

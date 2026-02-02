@@ -68,10 +68,12 @@ class CustomerRate extends Model
             return 0;
         }
 
-        $billable = max($durationSeconds, $this->min_duration);
+        $minDuration = $this->min_duration ?? 0;
+        $billable = max($durationSeconds, $minDuration);
 
-        if ($this->billing_increment > 1) {
-            $billable = ceil($billable / $this->billing_increment) * $this->billing_increment;
+        $increment = $this->billing_increment ?? 1;
+        if ($increment > 1) {
+            $billable = ceil($billable / $increment) * $increment;
         }
 
         return (int) $billable;

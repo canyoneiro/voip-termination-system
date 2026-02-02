@@ -18,7 +18,7 @@ class CleanupTraces extends Command
 
         $cutoff = now()->subDays($days);
 
-        $count = SipTrace::where('timestamp', '<', $cutoff)->delete();
+        $count = SipTrace::where('time_stamp', '<', $cutoff)->delete();
 
         $this->info("Deleted {$count} SIP traces older than {$days} days");
 
