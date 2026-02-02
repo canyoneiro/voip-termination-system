@@ -14,7 +14,7 @@ class CleanupAlerts extends Command
     public function handle()
     {
         $days = $this->option('days')
-            ?? SystemSetting::getValue('retention', 'alert_days', 30);
+            ?? SystemSetting::getValue('retention', 'alerts_days', 30);
 
         $cutoff = now()->subDays($days);
 
