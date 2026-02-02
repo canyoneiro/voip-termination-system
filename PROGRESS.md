@@ -232,6 +232,20 @@ php artisan test --filter=Kamailio
 
 ## Historial de Cambios
 
+### 2026-02-02 (noche)
+- ✅ **CheckThresholdsJob**: Nuevo job para verificar umbrales del sistema
+  - channels_warning_pct: Alerta uso de canales >= X%
+  - minutes_warning_pct: Alerta consumo de minutos >= X%
+  - min_asr_global: Alerta ASR bajo en últimas 4h
+  - options_timeout: Alerta carrier sin respuesta OPTIONS
+- ✅ **SyncSettingsToRedisJob**: Sincroniza settings BD → Redis para Kamailio
+- ✅ **Kamailio CHECK_WHITELIST**: IPs que nunca se bloquean
+- ✅ **Kamailio CHECK_GLOBAL_LIMITS**: Límites globales de canales y CPS
+- ✅ **Kamailio ANTIFLOOD dinámico**: Lee flood_threshold y blacklist_duration de Redis
+- ✅ **Contador global**: voip:global_calls para tracking de llamadas activas totales
+- ✅ **Documentación help**: Nueva sección "Umbrales y Configuración del Sistema"
+- ✅ **9 Settings implementados**: alerts/*, limits/*, security/*
+
 ### 2026-02-02 (tarde)
 - ✅ **Auditoría completa del sistema** - 10 correcciones críticas
 - ✅ **Kamailio HTABLE**: Aumentado blacklist size de 256 a 1024 entradas

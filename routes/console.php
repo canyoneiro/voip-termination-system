@@ -2,9 +2,11 @@
 
 use App\Jobs\AnalyzeFraudPatternsJob;
 use App\Jobs\CalculateQosDailyStatsJob;
+use App\Jobs\CheckThresholdsJob;
 use App\Jobs\GenerateScheduledReportJob;
 use App\Jobs\ProcessPendingAlertsJob;
 use App\Jobs\SyncCarrierStatesJob;
+use App\Jobs\SyncSettingsToRedisJob;
 use App\Models\ScheduledReport;
 use Illuminate\Support\Facades\Schedule;
 
@@ -19,6 +21,20 @@ Schedule::call(function () {
 Schedule::call(function () {
     SyncCarrierStatesJob::dispatch();
 })->everyMinute()->name('sync-carrier-states');
+
+// Check system thresholds and generate alerts
+// Uses settings: alerts/channels_warning_pct, alerts/minutes_warning_pct,
+// alerts/min_asr_global, alerts/options_timeout
+Schedule::call(function () {
+    CheckThresholdsJob::dispatch();
+})->everyMinute()->name('check-thresholds');
+
+// Sync critical settings to Redis for Kamailio to read
+// Uses settings: limits/global_max_*, security/flood_threshold,
+// security/blacklist_duration, security/whitelist_ips
+Schedule::call(function () {
+    SyncSettingsToRedisJob::dispatch();
+})->everyMinute()->name('sync-settings-redis');
 
 // Cleanup tasks
 Schedule::command('cleanup:all')->dailyAt('01:00');

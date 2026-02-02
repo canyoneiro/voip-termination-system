@@ -1,5 +1,66 @@
 # Changelog
 
+## [1.3.0] - 2026-02-02 - Implementación Completa de Umbrales
+
+### Nuevos Jobs Implementados
+- **CheckThresholdsJob**: Verifica umbrales del sistema y genera alertas automáticamente
+  - `channels_warning_pct`: Alerta cuando cliente usa >= X% de canales (default: 80%)
+  - `minutes_warning_pct`: Alerta cuando cliente consume >= X% de minutos (default: 80%)
+  - `min_asr_global`: Alerta cuando ASR de últimas 4h cae del umbral (default: 40%)
+  - `options_timeout`: Alerta cuando carrier no responde OPTIONS (default: 90s)
+- **SyncSettingsToRedisJob**: Sincroniza settings de BD a Redis para Kamailio
+  - Permite a Kamailio leer configuración dinámica sin reinicio
+  - TTL de 5 minutos para seguridad ante fallos
+
+### Kamailio - Implementación de Límites Globales
+- **CHECK_GLOBAL_LIMITS route**: Nueva ruta para verificar límites globales
+  - `global_max_channels`: Máximo de llamadas simultáneas en todo el sistema
+  - `global_max_cps`: CPS máximo global del sistema
+  - Genera alertas cuando se alcanzan los límites
+- **Contador voip:global_calls**: Tracking de llamadas activas globales
+  - Incremento en PROCESS_CALL
+  - Decremento en todos los puntos de finalización (BYE, FAILURE, dialog:end)
+
+### Kamailio - Implementación de Seguridad Dinámica
+- **CHECK_WHITELIST route**: IPs que nunca serán bloqueadas
+  - Lee de Redis SET `voip:whitelist`
+  - Skip de todas las verificaciones de seguridad
+- **ANTIFLOOD mejorado**: Ahora usa configuración dinámica
+  - `flood_threshold`: CPS por IP para detectar flood (leído de Redis)
+  - `blacklist_duration`: Duración del bloqueo automático (leído de Redis)
+  - Inserta en BD ip_blacklist además de Redis
+
+### Documentación
+- **Help page actualizada**: Nueva sección "Umbrales y Configuración del Sistema"
+  - Explica todos los settings de alertas, límites y seguridad
+  - Documenta valores por defecto y funcionamiento
+
+### Scheduler Actualizado
+- Añadido `CheckThresholdsJob` cada minuto
+- Añadido `SyncSettingsToRedisJob` cada minuto
+
+### Settings Implementados (9 total)
+| Categoría | Setting | Default | Descripción |
+|-----------|---------|---------|-------------|
+| alerts | channels_warning_pct | 80 | % uso canales para warning |
+| alerts | minutes_warning_pct | 80 | % uso minutos para warning |
+| alerts | min_asr_global | 40 | ASR mínimo global |
+| alerts | options_timeout | 90 | Timeout OPTIONS en segundos |
+| limits | global_max_channels | 0 | Canales máximos globales (0=sin límite) |
+| limits | global_max_cps | 0 | CPS máximo global (0=sin límite) |
+| security | flood_threshold | 50 | CPS por IP para flood |
+| security | blacklist_duration | 3600 | Duración blacklist automático |
+| security | whitelist_ips | (vacío) | IPs que nunca se bloquean |
+
+### Archivos Creados/Modificados
+- `app/Jobs/CheckThresholdsJob.php` (nuevo)
+- `app/Jobs/SyncSettingsToRedisJob.php` (nuevo)
+- `/etc/kamailio/kamailio.cfg` - Nuevas rutas CHECK_WHITELIST, CHECK_GLOBAL_LIMITS, ANTIFLOOD mejorado
+- `routes/console.php` - 2 nuevos jobs en scheduler
+- `resources/views/help/index.blade.php` - Nueva sección de documentación
+
+---
+
 ## [1.2.0] - 2026-02-02 - Correcciones Críticas y Robustez
 
 ### Kamailio - Correcciones Críticas

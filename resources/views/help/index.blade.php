@@ -30,6 +30,7 @@
                     <a href="#numeracion" class="px-3 py-1.5 bg-cyan-500/20 text-cyan-400 rounded-lg text-sm hover:bg-cyan-500/30 transition-colors">Normalizacion</a>
                     <a href="#cdrs" class="px-3 py-1.5 bg-orange-500/20 text-orange-400 rounded-lg text-sm hover:bg-orange-500/30 transition-colors">CDRs</a>
                     <a href="#alertas" class="px-3 py-1.5 bg-pink-500/20 text-pink-400 rounded-lg text-sm hover:bg-pink-500/30 transition-colors">Alertas</a>
+                    <a href="#umbrales" class="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm hover:bg-emerald-500/30 transition-colors">Umbrales</a>
                     <a href="#arquitectura" class="px-3 py-1.5 bg-gray-500/20 text-gray-400 rounded-lg text-sm hover:bg-gray-500/30 transition-colors">Arquitectura</a>
                 </div>
             </div>
@@ -650,6 +651,92 @@
                             Configurar destinos en: Sistema → Configuracion → Notificaciones
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Umbrales del Sistema -->
+            <div id="umbrales" class="dark-card p-6 mb-6">
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    Umbrales y Configuracion del Sistema
+                </h2>
+
+                <div class="prose prose-invert max-w-none mb-6">
+                    <p class="text-gray-300">
+                        El sistema monitorea constantemente varios <strong class="text-white">umbrales</strong> y genera alertas
+                        cuando se superan. Estos valores se pueden configurar en <strong class="text-white">Sistema → Configuracion</strong>.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white mb-3">Alertas Automaticas</h3>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-yellow-900/30 border border-yellow-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-yellow-400">Uso de Canales (channels_warning_pct)</p>
+                                <p class="text-xs text-gray-400">Alerta cuando un cliente usa >= X% de sus canales maximos.</p>
+                                <code class="text-xs bg-gray-800 px-2 py-1 rounded mt-1 inline-block">Default: 80%</code>
+                            </div>
+                            <div class="p-3 bg-yellow-900/30 border border-yellow-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-yellow-400">Uso de Minutos (minutes_warning_pct)</p>
+                                <p class="text-xs text-gray-400">Alerta cuando un cliente consume >= X% de sus minutos.</p>
+                                <code class="text-xs bg-gray-800 px-2 py-1 rounded mt-1 inline-block">Default: 80%</code>
+                            </div>
+                            <div class="p-3 bg-red-900/30 border border-red-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-red-400">ASR Global Minimo (min_asr_global)</p>
+                                <p class="text-xs text-gray-400">Alerta cuando el ASR de las ultimas 4 horas cae por debajo.</p>
+                                <code class="text-xs bg-gray-800 px-2 py-1 rounded mt-1 inline-block">Default: 40%</code>
+                            </div>
+                            <div class="p-3 bg-red-900/30 border border-red-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-red-400">Timeout OPTIONS (options_timeout)</p>
+                                <p class="text-xs text-gray-400">Alerta cuando un carrier no responde en X segundos.</p>
+                                <code class="text-xs bg-gray-800 px-2 py-1 rounded mt-1 inline-block">Default: 90s</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-white mb-3">Limites Globales</h3>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-blue-900/30 border border-blue-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-blue-400">Canales Globales (global_max_channels)</p>
+                                <p class="text-xs text-gray-400">Maximo de llamadas simultaneas en todo el sistema.</p>
+                                <code class="text-xs bg-gray-800 px-2 py-1 rounded mt-1 inline-block">Default: 0 (sin limite)</code>
+                            </div>
+                            <div class="p-3 bg-blue-900/30 border border-blue-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-blue-400">CPS Global (global_max_cps)</p>
+                                <p class="text-xs text-gray-400">Llamadas por segundo maximas en todo el sistema.</p>
+                                <code class="text-xs bg-gray-800 px-2 py-1 rounded mt-1 inline-block">Default: 0 (sin limite)</code>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-semibold text-white mb-3 mt-6">Seguridad</h3>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-purple-900/30 border border-purple-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-purple-400">Umbral de Flood (flood_threshold)</p>
+                                <p class="text-xs text-gray-400">CPS por IP para detectar ataque de flood.</p>
+                                <code class="text-xs bg-gray-800 px-2 py-1 rounded mt-1 inline-block">Default: 50 CPS</code>
+                            </div>
+                            <div class="p-3 bg-purple-900/30 border border-purple-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-purple-400">Duracion Blacklist (blacklist_duration)</p>
+                                <p class="text-xs text-gray-400">Segundos que una IP queda bloqueada tras detectar flood.</p>
+                                <code class="text-xs bg-gray-800 px-2 py-1 rounded mt-1 inline-block">Default: 3600s (1 hora)</code>
+                            </div>
+                            <div class="p-3 bg-green-900/30 border border-green-700/50 rounded-lg">
+                                <p class="text-sm font-semibold text-green-400">IPs Whitelist (whitelist_ips)</p>
+                                <p class="text-xs text-gray-400">IPs que nunca seran bloqueadas (separadas por comas).</p>
+                                <code class="text-xs bg-gray-800 px-2 py-1 rounded mt-1 inline-block">Ej: 1.2.3.4, 5.6.7.8</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-emerald-900/20 border border-emerald-700/30 rounded-lg">
+                    <h4 class="text-sm font-semibold text-emerald-400 mb-2">Sincronizacion Automatica</h4>
+                    <p class="text-sm text-gray-300">
+                        Los cambios en la configuracion se <strong class="text-white">sincronizan automaticamente</strong> con Kamailio cada minuto.
+                        No es necesario reiniciar ningun servicio. Los nuevos valores de umbrales se aplican en la siguiente verificacion.
+                    </p>
                 </div>
             </div>
 
