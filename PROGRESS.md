@@ -233,8 +233,10 @@ php artisan test --filter=Kamailio
 - ✅ Corregido ciclo sin salida: probing carriers no recibían OPTIONS porque no estaban en dispatcher
 - ✅ Auto-habilitación del probing al inicio de Kamailio (ExecStartPost)
 - ✅ TalkQ carrier ahora activo y respondiendo a OPTIONS (51.94.102.123:7447)
-- ✅ Ambos carriers operativos: TalkQ (prioridad 2) y TellmeSwitch (prioridad 5)
 - ✅ **Algoritmo dispatcher corregido**: Cambiado de 9 (weight) a 8 (priority-based)
+- ✅ **Prioridades corregidas**: En algoritmo 8, MAYOR número = seleccionado primero
+  - TalkQ: prioridad 10 (primero)
+  - TellmeSwitch: prioridad 5 (failover)
 - ✅ **Failover robusto implementado**:
   - Timeout INVITE: **10 segundos**
   - Failover en: cualquier error (4xx, 5xx, 6xx, timeout)
@@ -243,7 +245,7 @@ php artisan test --filter=Kamailio
   - Probing threshold: 2 fallos OPTIONS → estado probing (~60s)
   - Inactive threshold: 2 probes más → inactive (~120s total)
   - Recuperación automática e inmediata cuando responde a OPTIONS
-- ✅ Documentación de failover añadida a sección de Ayuda del panel
+- ✅ Documentación de failover actualizada en sección de Ayuda del panel
 
 ### 2026-02-01
 - ✅ **Accounting preciso**: PDD con milisegundos, progress_time, ring_time

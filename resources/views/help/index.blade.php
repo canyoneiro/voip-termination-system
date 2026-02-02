@@ -159,7 +159,7 @@
                         <div class="space-y-3">
                             <div class="p-3 bg-gray-800/50 rounded-lg">
                                 <p class="text-sm font-semibold text-white">Prioridad</p>
-                                <p class="text-xs text-gray-400">Menor numero = mayor prioridad. Carrier con prioridad 1 se usa antes que prioridad 2.</p>
+                                <p class="text-xs text-gray-400">Mayor numero = mayor prioridad. Carrier con prioridad 10 se usa antes que prioridad 5.</p>
                             </div>
                             <div class="p-3 bg-gray-800/50 rounded-lg">
                                 <p class="text-sm font-semibold text-white">Weight (Peso)</p>
@@ -219,7 +219,7 @@
                             <ul class="text-sm text-gray-400 space-y-2">
                                 <li class="flex items-center">
                                     <span class="bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center mr-2">1</span>
-                                    <span>Carrier con <strong class="text-white">menor numero</strong> de prioridad = primero</span>
+                                    <span>Carrier con <strong class="text-white">mayor numero</strong> de prioridad = primero</span>
                                 </li>
                                 <li class="flex items-center">
                                     <span class="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center mr-2">2</span>
@@ -231,7 +231,7 @@
                                 </li>
                             </ul>
                             <div class="mt-3 p-2 bg-indigo-900/30 border border-indigo-700/50 rounded text-xs text-indigo-300">
-                                <strong>Ejemplo:</strong> Carrier A (prioridad 1) → Carrier B (prioridad 2) → Carrier C (prioridad 5)
+                                <strong>Ejemplo:</strong> Carrier A (prioridad 10) → Carrier B (prioridad 5) → Carrier C (prioridad 2)
                             </div>
                         </div>
                     </div>
