@@ -14,7 +14,7 @@ class CleanupTraces extends Command
     public function handle()
     {
         $days = $this->option('days')
-            ?? SystemSetting::getValue('retention', 'trace_days', 7);
+            ?? SystemSetting::getValue('retention', 'traces_days', 7);
 
         $cutoff = now()->subDays($days);
 
