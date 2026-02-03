@@ -26,7 +26,7 @@
                             Mayor numero = se usa primero. Columna "Prior." define el orden.
                         </span>
                     </div>
-                    <a href="{{ route('help') }}#failover" class="text-sm text-blue-600 hover:text-blue-800">Ver documentacion</a>
+                    <a href="{{ route('help.index') }}#failover" class="text-sm text-blue-600 hover:text-blue-800">Ver documentacion</a>
                 </div>
             </div>
 

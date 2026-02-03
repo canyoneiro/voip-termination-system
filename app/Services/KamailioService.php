@@ -64,7 +64,7 @@ class KamailioService
      */
     public static function isRunning(): bool
     {
-        $result = shell_exec('systemctl is-active kamailio 2>&1');
+        $result = \shell_exec('systemctl is-active kamailio 2>&1');
         return trim($result ?? '') === 'active';
     }
 
@@ -76,7 +76,7 @@ class KamailioService
         $stats = [];
 
         // Get core stats
-        $result = shell_exec('kamcmd stats.get_statistics all 2>&1');
+        $result = \shell_exec('kamcmd stats.get_statistics all 2>&1');
         if ($result) {
             // Parse stats output
             preg_match_all('/(\w+)\s*=\s*(\d+)/', $result, $matches, PREG_SET_ORDER);
@@ -93,7 +93,7 @@ class KamailioService
      */
     public static function getDispatcherStatus(): array
     {
-        $result = shell_exec('kamcmd dispatcher.list 2>&1');
+        $result = \shell_exec('kamcmd dispatcher.list 2>&1');
         return ['raw' => $result];
     }
 
@@ -103,7 +103,7 @@ class KamailioService
     private static function executeCommand(string $command, string $context): bool
     {
         try {
-            $result = shell_exec("$command 2>&1");
+            $result = \shell_exec("$command 2>&1");
             $resultTrimmed = trim($result ?? '');
 
             // Success conditions:

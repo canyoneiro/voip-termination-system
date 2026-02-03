@@ -6,11 +6,13 @@ use App\Models\Alert;
 use App\Models\Carrier;
 use App\Models\CarrierIp;
 use App\Models\Cdr;
+use App\Models\Customer;
 use App\Models\CustomerIp;
 use App\Observers\AlertObserver;
 use App\Observers\CarrierObserver;
 use App\Observers\CarrierIpObserver;
 use App\Observers\CdrObserver;
+use App\Observers\CustomerObserver;
 use App\Observers\CustomerIpObserver;
 use App\Services\WebhookService;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
         Carrier::observe(CarrierObserver::class);
         CarrierIp::observe(CarrierIpObserver::class);
         Cdr::observe(CdrObserver::class);
+        Customer::observe(CustomerObserver::class);
         CustomerIp::observe(CustomerIpObserver::class);
     }
 }

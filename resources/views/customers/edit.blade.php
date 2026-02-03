@@ -24,11 +24,11 @@
                                 <h3 class="text-sm font-semibold text-white">Estado del Cliente</h3>
                                 <p class="text-xs text-gray-500 mt-0.5">Activa o desactiva este cliente para recibir trafico</p>
                             </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
+                            <label class="relative inline-flex items-center cursor-pointer" x-data="{ enabled: {{ $customer->active ? 'true' : 'false' }} }">
                                 <input type="hidden" name="active" value="0">
-                                <input type="checkbox" name="active" value="1" class="sr-only peer" {{ $customer->active ? 'checked' : '' }}>
+                                <input type="checkbox" name="active" value="1" class="sr-only peer" x-model="enabled" {{ $customer->active ? 'checked' : '' }}>
                                 <div class="w-14 h-7 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-500"></div>
-                                <span class="ml-3 text-sm font-medium {{ $customer->active ? 'text-green-400' : 'text-gray-400' }}">{{ $customer->active ? 'Activo' : 'Inactivo' }}</span>
+                                <span class="ml-3 text-sm font-medium transition-colors" :class="enabled ? 'text-green-400' : 'text-red-400'" x-text="enabled ? 'Activo' : 'Inactivo'"></span>
                             </label>
                         </div>
                     </div>
