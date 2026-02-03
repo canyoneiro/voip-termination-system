@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Jobs\SyncFirewallJob;
 use App\Models\Alert;
 use App\Models\Carrier;
 use App\Models\KamailioDispatcher;
@@ -145,6 +146,10 @@ class CarrierObserver
                 'synced_count' => $result['synced'],
                 'reloaded' => $result['reloaded'],
             ]);
+
+            // Sync firewall rules (carrier IPs need to be allowed on SIP port)
+            SyncFirewallJob::dispatchDebounced("carrier_{$action}:{$carrier->name}");
+
         } catch (\Exception $e) {
             Log::error("Failed to sync Kamailio dispatcher after carrier {$action}", [
                 'carrier_id' => $carrier->id,

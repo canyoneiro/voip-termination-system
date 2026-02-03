@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Jobs\SyncFirewallJob;
 use App\Models\CustomerIp;
 use App\Models\KamailioAddress;
 use Illuminate\Support\Facades\Log;
@@ -48,6 +49,10 @@ class CustomerIpObserver
                 'synced_count' => $result['synced'],
                 'reloaded' => $result['reloaded'],
             ]);
+
+            // Sync firewall rules (customer IPs need to be allowed on SIP port)
+            SyncFirewallJob::dispatchDebounced("customer_ip_{$action}:{$customerIp->ip_address}");
+
         } catch (\Exception $e) {
             Log::error("Failed to sync Kamailio address after IP {$action}", [
                 'customer_ip_id' => $customerIp->id,

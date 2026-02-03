@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Models\Alert;
 use App\Models\Carrier;
+use App\Models\CarrierIp;
 use App\Models\Cdr;
 use App\Models\CustomerIp;
 use App\Observers\AlertObserver;
 use App\Observers\CarrierObserver;
+use App\Observers\CarrierIpObserver;
 use App\Observers\CdrObserver;
 use App\Observers\CustomerIpObserver;
 use App\Services\WebhookService;
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Alert::observe(AlertObserver::class);
         Carrier::observe(CarrierObserver::class);
+        CarrierIp::observe(CarrierIpObserver::class);
         Cdr::observe(CdrObserver::class);
         CustomerIp::observe(CustomerIpObserver::class);
     }
