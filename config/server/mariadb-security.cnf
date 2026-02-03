@@ -1,0 +1,46 @@
+# MariaDB Security Hardening Configuration
+# VoIP Termination System
+
+[mysqld]
+# Disable dangerous features
+local_infile = 0
+symbolic-links = 0
+skip-symbolic-links
+
+# Disable external locking
+skip-external-locking
+
+# Skip DNS lookups for faster and safer connections
+skip-name-resolve
+
+# Log warnings and errors
+log_warnings = 2
+
+# Secure file handling - restrict where files can be read/written
+secure_file_priv = /var/lib/mysql-files
+
+# Password policy (if validate_password plugin is available)
+# plugin-load-add = validate_password.so
+# validate_password_policy = MEDIUM
+# validate_password_length = 12
+
+# Connection timeouts to prevent hanging connections
+connect_timeout = 10
+wait_timeout = 600
+interactive_timeout = 600
+
+# Limit concurrent connections
+max_connections = 100
+max_user_connections = 50
+
+# Memory limits to prevent DoS
+max_allowed_packet = 64M
+tmp_table_size = 32M
+max_heap_table_size = 32M
+
+# Query cache disabled (deprecated in newer versions)
+query_cache_type = 0
+query_cache_size = 0
+
+# InnoDB security settings
+innodb_file_per_table = 1
